@@ -1,3 +1,29 @@
 from django.contrib import admin
+from weather_show_app.models import Weather
+from weather_show_app.models import Wind, City
 
-# Register your models here.
+
+class ExtendWind(admin.ModelAdmin):
+    list_display = ('id', 'wind_power', 'wind_direction')
+    search_fields = ('win_power', "wind_direction")
+
+
+class ExtendCity(admin.ModelAdmin):
+    list_display = ('id', 'city_name', 'city_pinyin', 'city_code',)
+
+
+class ExtendWeather(admin.ModelAdmin):
+    list_display = (
+        "id", 'city', "state", "date",
+        "max_temperature", "mini_temperature",
+        "update_date", "humidity", "wind")
+
+    def fav_house_number(self, obj):  # 好方便啊
+        num = len(obj.fav_houses.all())
+        return str(num)
+
+
+admin.site.register(Weather, ExtendWeather)
+admin.site.register(City, ExtendCity)
+admin.site.register(Wind, ExtendWind)
+
