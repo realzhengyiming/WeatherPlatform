@@ -2,7 +2,7 @@ import scrapy
 
 
 class ChinaWeatherSpider(scrapy.Spider):
-    name = 'china_weather'
+    name = 'today_weather'
     allowed_domains = ['weather.com.cn']
     start_urls = ['http://www.weather.com.cn/weather1d/101280601.shtml']
 

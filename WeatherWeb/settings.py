@@ -75,10 +75,26 @@ WSGI_APPLICATION = 'WeatherWeb.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+# 数据库配置好mysql的
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': "scrapy_django",
+        'USER': 'root',
+        'PASSWORD': '123456',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            # "init_command": "SET foreign_key_checks = 0;",
+        },  # 都该成这种编码，避免emoji无法存储
+        'HOST': "127.0.0.1",  # 要不要都改成远程的地址
+        'PORT': '3306'
     }
 }
 
