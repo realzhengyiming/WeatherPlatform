@@ -125,7 +125,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # simple ui 后台的前端美化的配置
-SIMPLEUI_LOGO = {
-    "login_name": "far fa-cloud-hail"
-}
+# SIMPLEUI_LOGO = {
+#     "login_name": "far fa-cloud-hail"
+# }
 # 'https://avatars2.githubusercontent.com/u/13655483?s=60&v=4'

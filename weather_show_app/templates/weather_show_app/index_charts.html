@@ -488,7 +488,7 @@ mdui-theme-primary-indigo mdui-theme-accent-pink">
       if (del_house_id !== "") {
           $.ajax({
               type: "GET",
-              url: "{% url 'hotelapp:Favourite' %}?username={{request.user.username}}&method=add&del_house_id=" +
+              url: "{% url 'weather_show_app:Favourite' %}?username={{request.user.username}}&method=add&del_house_id=" +
                   del_house_id.toString(),
               dataType: 'json',
               // async: false,
@@ -538,7 +538,7 @@ mdui-theme-primary-indigo mdui-theme-accent-pink">
             //发送请求
             $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:Favourite' %}?username={{request.user.username}}&method=del&del_house_id="+
+                url: "{% url 'weather_show_app:Favourite' %}?username={{request.user.username}}&method=del&del_house_id="+
                     del_house_id.toString(),
                 dataType: 'json',
                 // async: false,
@@ -578,7 +578,7 @@ mdui-theme-primary-indigo mdui-theme-accent-pink">
             //发送请求
             $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:Favourite' %}?username={{request.user.username}}&method=del&del_house_id="+
+                url: "{% url 'weather_show_app:Favourite' %}?username={{request.user.username}}&method=del&del_house_id="+
                     del_house_id.toString(),
                 dataType: 'json',
                 // async: false,

@@ -105,7 +105,7 @@
         function fetchData_predictImg(cName,htype,harea) {  // 点击确认后就调用这个
             $.ajax({
                 type: "POST",
-                url: "{% url 'hotelapp:predictPrice' %}",
+                url: "{% url 'weather_show_app:predictPrice' %}",
                 dataType: 'json',
                 // async:false,   //使用同步
                 timeout:25000,  //很快的把

@@ -38,15 +38,15 @@
           <!--<a href="{% url 'weather_show_app:consumer' %}" class="mdui-list-item mdui-ripple ">房客专区</a>-->
    <a ><div class="mdui-divider"></div></a>
       <!--<a  class="mdui-list-item mdui-ripple ">house_title</a>-->
-        <a href="{% url 'hotelapp:price' %}" class="mdui-list-item mdui-ripple ">房源价格分析</a>
-       <!--<a href="{% url 'hotelapp:detaillist' %}" class="mdui-list-item mdui-ripple ">地理位置分析</a>-->
-        <a href="{% url 'hotelapp:time' %}" class="mdui-list-item mdui-ripple ">发布时间分析</a>
-      <!--<a href="{% url 'hotelapp:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>-->
-                <a href="{% url 'hotelapp:area' %}" class="mdui-list-item mdui-ripple ">房源面积分析</a>
+        <a href="{% url 'weather_show_app:price' %}" class="mdui-list-item mdui-ripple ">房源价格分析</a>
+       <!--<a href="{% url 'weather_show_app:detaillist' %}" class="mdui-list-item mdui-ripple ">地理位置分析</a>-->
+        <a href="{% url 'weather_show_app:time' %}" class="mdui-list-item mdui-ripple ">发布时间分析</a>
+      <!--<a href="{% url 'weather_show_app:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>-->
+                <a href="{% url 'weather_show_app:area' %}" class="mdui-list-item mdui-ripple ">房源面积分析</a>
 
-        <a href="{% url 'hotelapp:facilityPage' %}" class="mdui-list-item mdui-ripple mdui-list-item-active ">
+        <a href="{% url 'weather_show_app:facilityPage' %}" class="mdui-list-item mdui-ripple mdui-list-item-active ">
             房源设施分析</a>
-        <a href="{% url 'hotelapp:assess' %}" class="mdui-list-item mdui-ripple ">房源价格评估</a>
+        <a href="{% url 'weather_show_app:assess' %}" class="mdui-list-item mdui-ripple ">房源价格评估</a>
 
        <a ><div class="mdui-divider"></div></a>
 
@@ -93,7 +93,7 @@
         function fetchData_timeline() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:_facility_price' %}",
+                url: "{% url 'weather_show_app:_facility_price' %}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -129,7 +129,7 @@
         function fetchData_drawmap() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:_facility' %}",
+                url: "{% url 'weather_show_app:_facility' %}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -167,7 +167,7 @@
         function fetchData_liqu() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:house_content' %}",
+                url: "{% url 'weather_show_app:house_content' %}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,

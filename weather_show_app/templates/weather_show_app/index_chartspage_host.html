@@ -35,17 +35,17 @@
       </div>
       <div class="mdui-collapse-item-body mdui-list  mdui-collapse-item-open  ">
            <a href="{% url 'weather_show_app:host' %}" class="mdui-list-item mdui-ripple mdui-list-item-active">房东数据分析</a>
-          <!--<a href="{% url 'hotelapp:consumer' %}" class="mdui-list-item mdui-ripple ">房客专区</a>-->
-    <a href="{% url 'hotelapp:price' %}" class="mdui-list-item mdui-ripple ">房源价格分析</a>
-       <!--<a href="{% url 'hotelapp:detaillist' %}" class="mdui-list-item mdui-ripple ">地理位置分析</a>-->
-        <a href="{% url 'hotelapp:time' %}" class="mdui-list-item mdui-ripple ">发布时间分析</a>
-      <!--<a href="{% url 'hotelapp:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>-->
-        <a href="{% url 'hotelapp:area' %}" class="mdui-list-item mdui-ripple ">房源面积分析</a>
-      <!--<a href="{% url 'hotelapp:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>-->
-        <!--<a href="{% url 'hotelapp:facilityPage' %}" class="mdui-list-item mdui-ripple ">房源</a>-->
-        <a href="{% url 'hotelapp:facilityPage' %}" class="mdui-list-item mdui-ripple ">房源设施分析</a>
+          <!--<a href="{% url 'weather_show_app:consumer' %}" class="mdui-list-item mdui-ripple ">房客专区</a>-->
+    <a href="{% url 'weather_show_app:price' %}" class="mdui-list-item mdui-ripple ">房源价格分析</a>
+       <!--<a href="{% url 'weather_show_app:detaillist' %}" class="mdui-list-item mdui-ripple ">地理位置分析</a>-->
+        <a href="{% url 'weather_show_app:time' %}" class="mdui-list-item mdui-ripple ">发布时间分析</a>
+      <!--<a href="{% url 'weather_show_app:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>-->
+        <a href="{% url 'weather_show_app:area' %}" class="mdui-list-item mdui-ripple ">房源面积分析</a>
+      <!--<a href="{% url 'weather_show_app:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>-->
+        <!--<a href="{% url 'weather_show_app:facilityPage' %}" class="mdui-list-item mdui-ripple ">房源</a>-->
+        <a href="{% url 'weather_show_app:facilityPage' %}" class="mdui-list-item mdui-ripple ">房源设施分析</a>
              <a ><div class="mdui-divider"></div></a>
-        <a href="{% url 'hotelapp:assess' %}" class="mdui-list-item mdui-ripple ">房源价格评估</a>
+        <a href="{% url 'weather_show_app:assess' %}" class="mdui-list-item mdui-ripple ">房源价格评估</a>
 
     </div>
   </div>
@@ -90,7 +90,7 @@
         function fetchget_hostDrawData() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:get_hostDraw' %}",
+                url: "{% url 'weather_show_app:get_hostDraw' %}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -136,7 +136,7 @@
         function fetchData_timeline() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:get_hostReplay' %}",
+                url: "{% url 'weather_show_app:get_hostReplay' %}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -174,7 +174,7 @@
         function fetchData_drawmap() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:diffcity_hostNum' %}",
+                url: "{% url 'weather_show_app:diffcity_hostNum' %}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,   //15秒

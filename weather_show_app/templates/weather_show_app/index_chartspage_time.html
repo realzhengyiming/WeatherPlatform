@@ -136,7 +136,7 @@
         function fetchline2Data() {
             var  temp4 = $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:house_firstOnSale' %}?yearRange=2019-2020",
+                url: "{% url 'weather_show_app:house_firstOnSale' %}?yearRange=2019-2020",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -185,7 +185,7 @@
         function fetchline3Data() {
             var  temp3 = $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:get_postTimeLine' %}?timeFreq=month",
+                url: "{% url 'weather_show_app:get_postTimeLine' %}?timeFreq=month",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -232,7 +232,7 @@
         function fetchline4Data() {
             var  temp2 = $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:get_postTimeLine' %}?timeFreq=year",
+                url: "{% url 'weather_show_app:get_postTimeLine' %}?timeFreq=year",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -278,7 +278,7 @@
         function fetchseasonData() {
             var  temp1 =  $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:_postTime_cityName' %}",
+                url: "{% url 'weather_show_app:_postTime_cityName' %}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,

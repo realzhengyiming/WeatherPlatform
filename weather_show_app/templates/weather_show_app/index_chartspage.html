@@ -51,7 +51,7 @@
              <a ><div class="mdui-divider"></div></a>
         <a href="{% url 'weather_show_app:assess' %}" class="mdui-list-item mdui-ripple ">房源价格评估</a>
 
-                <!--<a href="{% url 'hotelapp:favcount' %}" class="mdui-list-item mdui-ripple ">房价评估</a>-->
+                <!--<a href="{% url 'weather_show_app:favcount' %}" class="mdui-list-item mdui-ripple ">房价评估</a>-->
 
        <a ><div class="mdui-divider"></div></a>
 
@@ -150,7 +150,7 @@
         function fetchbarData() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:bar' %}",
+                url: "{% url 'weather_show_app:bar' %}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -188,7 +188,7 @@
         function fetchData() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:pie' %}",
+                url: "{% url 'weather_show_app:pie' %}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -225,7 +225,7 @@
         function fetchData_timeline() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:timeline' %} ",
+                url: "{% url 'weather_show_app:timeline' %} ",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -263,7 +263,7 @@
         function fetchData_drawmap() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'hotelapp:drawMap' %}",
+                url: "{% url 'weather_show_app:drawMap' %}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,

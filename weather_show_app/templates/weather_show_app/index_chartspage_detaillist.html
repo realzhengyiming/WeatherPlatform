@@ -95,7 +95,7 @@
         function fetchData_timeline() {
             $.ajax({
                 type: "GET",
-                url: "/hotelapp/timeline/",
+                url: "/weather_show_app/timeline/",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -138,7 +138,7 @@
      <tr>
          <td>{{ object.house_id }}</td>
          <td>{{ object.house_oriprice }}</td>
-        <td ><a href="/hotelapp/detail/?house_id={{ object.house_id }}" target="_blank">{{ object.house_title }}</a></td>
+        <td ><a href="/weather_show_app/detail/?house_id={{ object.house_id }}" target="_blank">{{ object.house_title }}</a></td>
 {#        <td>{{ object.3 }}</td>#}
         <td>{{ object.house_date }}</td>
         <td>{{ object.house_cityName }}</td>

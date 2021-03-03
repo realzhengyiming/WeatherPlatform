@@ -40,8 +40,8 @@
       <a  class="mdui-list-item mdui-ripple ">house_title</a>
         <a href="{% url 'weather_show_app:price' %}" class="mdui-list-item mdui-ripple ">房源价格分析</a>
        <a href="{% url 'weather_show_app:detaillist' %}" class="mdui-list-item mdui-ripple ">地理位置分析</a>
-        <a href="{% url 'hotelapp:time' %}" class="mdui-list-item mdui-ripple ">发布时间分析</a>
-      <a href="{% url 'hotelapp:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>
+        <a href="{% url 'weather_show_app:time' %}" class="mdui-list-item mdui-ripple ">发布时间分析</a>
+      <a href="{% url 'weather_show_app:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>
        <a ><div class="mdui-divider"></div></a>
 
     </div>
@@ -87,7 +87,7 @@
         function fetchData_timeline() {
             $.ajax({
                 type: "GET",
-                url: "/hotelapp/timeline/",
+                url: "/weather_show_app/timeline/",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -124,7 +124,7 @@
         function fetchData_drawmap() {
             $.ajax({
                 type: "GET",
-                url: "/hotelapp/drawmap/",
+                url: "/weather_show_app/drawmap/",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
