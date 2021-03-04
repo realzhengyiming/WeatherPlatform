@@ -30,11 +30,11 @@ class City(models.Model):
     class Meta:
         db_table = 'City'
 
-    city_name = models.CharField(max_length=50, unique=True)  # 城市名字
-    city_pinyin = models.CharField(max_length=50, unique=True)  # 减少冗余的代价是时间代价
-    city_code = models.CharField(max_length=20)
+    name = models.CharField(max_length=50, unique=True)  # 城市名字
+    pinyin = models.CharField(max_length=100, blank=True)  # 减少冗余的代价是时间代价
+    code = models.CharField(max_length=20, blank=True)
 
     # 对应中国天气网的url code http://www.weather.com.cn/weather/101080101.shtml
 
     def __str__(self):
-        return f"{self.city_name} - {self.city_pinyin} {self.city_code}"
+        return f"{self.name} - {self.pinyin} {self.code}"

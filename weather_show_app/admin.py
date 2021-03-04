@@ -9,7 +9,7 @@ class ExtendWind(admin.ModelAdmin):
 
 
 class ExtendCity(admin.ModelAdmin):
-    list_display = ('id', 'city_name', 'city_pinyin', 'city_code',)
+    list_display = ('id', 'name', 'pinyin', 'code',)
 
 
 class ExtendWeather(admin.ModelAdmin):

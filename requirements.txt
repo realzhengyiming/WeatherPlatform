@@ -1,0 +1,13 @@
+Pinyin
+pymysql
+django
+djangorestframework
+pandas
+pyecharts
+drf-extensions
+matplotlib
+seaborn
+sklearn
+jieba
+uwsgi
+django_redis
