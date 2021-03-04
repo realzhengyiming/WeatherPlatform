@@ -11,3 +11,5 @@ sklearn
 jieba
 uwsgi
 django_redis
+DBUtils
+fake_useragent
