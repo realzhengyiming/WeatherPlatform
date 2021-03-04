@@ -9,6 +9,7 @@ class ExtendWind(admin.ModelAdmin):
 
 
 class ExtendCity(admin.ModelAdmin):
+    search_fields = ("name", "pinyin", "code")  # 搜索字段
     list_display = ('id', 'name', 'pinyin', 'code',)
 
 

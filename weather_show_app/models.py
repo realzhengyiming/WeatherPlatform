@@ -14,6 +14,7 @@ class Weather(models.Model):  # 天气的表
         db_table = 'Weather'
 
     humidity = models.FloatField()  # 湿度
+    AQI = models.IntegerField(blank=True)  # 空气质量
     state = models.TextField()  # 晴朗，多云，大风，台风，暴雨，暴雪，～之类的
     date = models.DateField()
     update_date = models.DateField(auto_now=True)
