@@ -1,6 +1,6 @@
 import scrapy
 
-from weather_cralwer.weather_cralwer.util import mysql_conn_instance
+from weather_cralwer.weather_cralwer.db_util import mysql_conn_instance  # todo 修好这个东西 找不到爬虫的问题
 
 
 class ChinaWeatherSpider(scrapy.Spider):
@@ -11,7 +11,9 @@ class ChinaWeatherSpider(scrapy.Spider):
 
     def start_requests(self):
         all_city_list = mysql_conn_instance.query("select * from city ;")
-        for city_dict in all_city_list:
+
+        # all_city_list = [{"name": "北京", "pinyin": "beijing", "code": '101010100'}]
+        for city_dict in all_city_list[:2]:
             if "pinyin" in city_dict:
                 city_code = city_dict['code']
                 city_name = city_dict['name']
@@ -26,5 +28,7 @@ class ChinaWeatherSpider(scrapy.Spider):
         pass
 
     def parse(self, response):
+        result = response.xpath("//script/text()")
         # 抓取当天的天气
-        pass
+        print(result)
+        print()

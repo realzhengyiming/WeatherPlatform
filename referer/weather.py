@@ -68,6 +68,7 @@ def get_content(html):
             # print(temp)
             final_day.append(temp)
         count = count + 1
+
     # 下面爬取7天的数据	
     ul = data.find('ul')  # 找到所有的ul标签
     li = ul.find_all('li')  # 找到左右的li标签

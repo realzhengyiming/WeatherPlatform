@@ -7,11 +7,18 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import os
+import sys
+import django
+
+sys.path.append("/Users/zhengyiming/MyWorkSpace/PythonSpace/WeatherWeb")  # TODO 使用绝对路径就很讨厌，换地方的时候要改这儿
+os.environ['DJANGO_SETTINGS_MODULE'] = 'WeatherWeb.settings'
+django.setup()
 
 BOT_NAME = 'weather_cralwer'
 
-SPIDER_MODULES = ['weather_cralwer.spiders']
-NEWSPIDER_MODULE = 'weather_cralwer.spiders'
+SPIDER_MODULES = ['weather_cralwer.weather_cralwer.spiders']  # 如果是放到外边去，那这儿就也要从最外层引入
+NEWSPIDER_MODULE = 'weather_cralwer.weather_cralwer.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'weather_cralwer (+http://www.yourdomain.com)'

@@ -1,14 +1,6 @@
 from django.db import models
 
 
-class Wind(models.Model):  # 风
-    class Meta:
-        db_table = 'Wind'
-
-    wind_power = models.FloatField()  # 风力
-    wind_direction = models.TextField()  # 风向
-
-
 class Weather(models.Model):  # 天气的表
     class Meta:
         db_table = 'Weather'
@@ -22,7 +14,9 @@ class Weather(models.Model):  # 天气的表
     max_temperature = models.FloatField()  # 最高温和最低温
     mini_temperature = models.FloatField()
 
-    wind = models.OneToOneField(Wind, on_delete=models.CASCADE)
+    wind_power = models.FloatField(blank=True,default=0.0)  # 风力
+    wind_direction = models.TextField(blank=True)  # 风向
+
     city = models.CharField(max_length=40)
     extend_detail = models.TextField()  # 这个是json的东西
 
@@ -39,3 +33,10 @@ class City(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.pinyin} {self.code}"
+
+
+class Favourite(models.Model):  # 收藏夹
+    fav_city = models.OneToOneField(City, unique=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.fav_city.city_name)

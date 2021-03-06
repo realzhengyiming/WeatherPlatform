@@ -1,11 +1,6 @@
 from django.contrib import admin
 from weather_show_app.models import Weather
-from weather_show_app.models import Wind, City
-
-
-class ExtendWind(admin.ModelAdmin):
-    list_display = ('id', 'wind_power', 'wind_direction')
-    search_fields = ('win_power', "wind_direction")
+from weather_show_app.models import City
 
 
 class ExtendCity(admin.ModelAdmin):
@@ -17,7 +12,7 @@ class ExtendWeather(admin.ModelAdmin):
     list_display = (
         "id", 'city', "state", "date",
         "max_temperature", "mini_temperature",
-        "update_date", "humidity", "wind")
+        "update_date", "humidity", "wind_power", "wind_direction")
 
     def fav_house_number(self, obj):  # 好方便啊
         num = len(obj.fav_houses.all())
@@ -26,5 +21,3 @@ class ExtendWeather(admin.ModelAdmin):
 
 admin.site.register(Weather, ExtendWeather)
 admin.site.register(City, ExtendCity)
-admin.site.register(Wind, ExtendWind)
-
