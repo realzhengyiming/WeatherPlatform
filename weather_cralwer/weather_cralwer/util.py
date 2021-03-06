@@ -7,6 +7,9 @@ import pymysql
 from WeatherWeb.settings import DATABASES
 import pymysql
 from dbutils.pooled_db import PooledDB
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MysqlSimipleConn:
@@ -24,14 +27,27 @@ class MysqlSimipleConn:
     def query(self, sql: str) -> List:
         conn = self.pool.connection()
         cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
-        cursor.execute(sql)
+
         result = []
-        if sql.find('select') != -1 or sql.find("SELECT") != -1:
-            result = cursor.fetchall()
+        try:
+            cursor.execute(sql)
+            if sql.find('select') != -1 or sql.find("SELECT") != -1:
+                result = cursor.fetchall()
+            elif sql.find("insert") != -1 or sql.find("INSERT") != -1:
+                conn.commit()  # 提交的插入才有效果
+        except Exception as e:
+            conn.rollback()  # 失败后就不插入
+            logger.error(f"{e} : {sql}")
         return result
 
 
 mysql_conn_instance = MysqlSimipleConn()
 if __name__ == '__main__':
-    result = mysql_conn_instance.query("select * from city ;")
+    # result = mysql_conn_instance.query("select * from city ;")
+    # print(result)
+
+    # 测试插入
+    sql = "insert into test_table (id,name) values ('1','nihao')"
+    result = mysql_conn_instance.query(sql)
+    result = mysql_conn_instance.query("select * from test_table ;")
     print(result)
