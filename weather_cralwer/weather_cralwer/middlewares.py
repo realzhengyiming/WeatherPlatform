@@ -2,11 +2,15 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import random
+
 from fake_useragent import UserAgent
 from scrapy import signals
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+
+from weather_cralwer.weather_cralwer.constant.user_agent_list import user_agent_list
 
 
 class ChangeUserAgentMiddleware:
@@ -18,8 +22,8 @@ class ChangeUserAgentMiddleware:
         return s
 
     def process_request(self, request, spider):
-        ua = UserAgent()
-        request.headers['User-Agent'] = ua.random
+        random_ua = random.choice(user_agent_list)
+        request.headers['User-Agent'] = random_ua
         return None
 
     def process_exception(self, request, exception, spider):

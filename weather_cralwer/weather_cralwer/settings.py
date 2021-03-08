@@ -11,9 +11,21 @@ import os
 import sys
 import django
 
-sys.path.append("/Users/zhengyiming/MyWorkSpace/PythonSpace/WeatherWeb")  # TODO 使用绝对路径就很讨厌，换地方的时候要改这儿
-os.environ['DJANGO_SETTINGS_MODULE'] = 'WeatherWeb.settings'
+import os
+import sys
+import django
+
+BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+PRO_ROOT = os.path.dirname(BASE_DIR)  # 两个项目共同的根目录
+sys.path.append(os.path.join(PRO_ROOT, 'WeatherWeb'))
+sys.path.append(os.path.join(BASE_DIR, 'WeatherWeb'))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'WeatherWeb.WeatherWeb.settings'
 django.setup()
+# settings.configure()
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE',
+                      'WeatherWeb.settings')  # 导入django的环境，第二个参数是django项目名.settings
+django.setup()  # 启用Django环境
 
 BOT_NAME = 'weather_cralwer'
 
@@ -24,7 +36,7 @@ NEWSPIDER_MODULE = 'weather_cralwer.weather_cralwer.spiders'
 # USER_AGENT = 'weather_cralwer (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 # CONCURRENT_REQUESTS = 32

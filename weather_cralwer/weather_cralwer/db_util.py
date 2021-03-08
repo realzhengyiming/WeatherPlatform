@@ -4,7 +4,7 @@ from typing import List
 
 import pymysql
 
-from WeatherWeb.settings import DATABASES
+from WeatherWeb.WeatherWeb.settings import DATABASES
 import pymysql
 from dbutils.pooled_db import PooledDB
 import logging

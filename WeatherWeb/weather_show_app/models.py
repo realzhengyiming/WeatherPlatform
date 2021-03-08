@@ -14,11 +14,11 @@ class Weather(models.Model):  # 天气的表
     max_temperature = models.FloatField()  # 最高温和最低温
     mini_temperature = models.FloatField()
 
-    wind_power = models.FloatField(blank=True,default=0.0)  # 风力
+    wind_power = models.FloatField(blank=True, default=0.0)  # 风力
     wind_direction = models.TextField(blank=True)  # 风向
 
     city = models.CharField(max_length=40)
-    extend_detail = models.TextField()  # 这个是json的东西
+    extend_detail = models.TextField(blank=True)  # 这个是json的东西
 
 
 class City(models.Model):
