@@ -1,6 +1,7 @@
 from django.contrib import admin
-from weather_show_app.models import Weather
+from weather_show_app.models import DateWeather
 from weather_show_app.models import City
+from weather_show_app.models import Favourite
 
 
 class ExtendCity(admin.ModelAdmin):
@@ -8,16 +9,28 @@ class ExtendCity(admin.ModelAdmin):
     list_display = ('id', 'name', 'pinyin', 'code',)
 
 
-class ExtendWeather(admin.ModelAdmin):
+class ExtendDateWeather(admin.ModelAdmin):
     list_display = (
         "id", 'city', "state", "date",
-        "max_temperature", "mini_temperature",
+        "max_temperature", "min_temperature",
         "update_date", "humidity", "wind_power", "wind_direction")
 
-    def fav_house_number(self, obj):  # 好方便啊
-        num = len(obj.fav_houses.all())
+
+class ExtendFav(admin.ModelAdmin):
+    list_display = (
+        "user",
+        'fav_city_number',
+    )
+
+    def fav_city_number(self, obj):  # 好方便啊
+        num = len(obj.city.all())
         return str(num)
 
+    def fav_city_list(self, obj):
+        string = ";".join(obj.city.all())
+        return string
 
-admin.site.register(Weather, ExtendWeather)
+
+admin.site.register(DateWeather, ExtendDateWeather)
 admin.site.register(City, ExtendCity)
+admin.site.register(Favourite, ExtendFav)

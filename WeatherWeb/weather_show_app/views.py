@@ -14,7 +14,7 @@ import json
 from django.http import HttpResponse, HttpResponseRedirect
 from rest_framework.views import APIView
 
-from .models import City, Weather
+from .models import City, DateWeather
 
 
 def index(request):
@@ -158,7 +158,7 @@ def index(request):  # 这儿唯一有一个就是显示页面的
         print(success_info)
 
     nowdate = time.strftime('%Y-%m-%d', time.localtime(time.time()))
-    count_today = Weather.objects.filter(date=nowdate).aggregate(count=Count("id"))
+    count_today = DateWeather.objects.filter(date=nowdate).aggregate(count=Count("id"))
     # count_today_city = Weather.objects.filter(date=nowdate).aggregate(count=Count("id", distinct=True))
     # count_total_city = Weather.objects.aggregate(count=Count("house_cityName", distinct=True))
     context = {
