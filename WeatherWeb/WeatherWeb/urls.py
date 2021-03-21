@@ -18,6 +18,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("weather_show_app/", include("weather_show_app.urls")),
+    path("", include("weather_show_app.urls")),  # 让app直接成为主页
 
 ]
