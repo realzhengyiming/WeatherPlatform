@@ -4,19 +4,25 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 from scrapy import Item, Field
 
+from scrapy_djangoitem import DjangoItem
+from weather_show_app.models import DateWeather, WeatherDetail, Favourite, City
 
-class WeatherItem(Item):
-    humidity = Field()  # 湿度
-    AQI = Field()  # 空气质量
-    state = Field()  # 晴朗，多云，大风，台风，暴雨，暴雪，～之类的
-    date = Field()
-    update_date = Field()
 
-    max_temperature = Field()  # 最高温和最低温
-    mini_temperature = Field()
+class DateWeatherItem(DjangoItem):
+    django_model = DateWeather
+    city_name = Field()  # 这个是临时增加的，用来存城市名字，后面再填充到model中去
+    extend_detail = Field()  # 这个是json的东西
 
-    wind_direction = Field()
-    wind_power = Field()
 
-    city = Field()
-    extend_detail = Field()  # 这个是json的东西,dumps 放置七天的天气的东西
+class WeatherDetailItem(DjangoItem):
+    django_model = WeatherDetail
+
+
+class FavouriteItem(DjangoItem):
+    django_model = Favourite
+
+
+class CityItem(DjangoItem):
+    django_model = City
+
+

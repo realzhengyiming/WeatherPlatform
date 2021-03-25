@@ -19,5 +19,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("weather_show_app.urls")),  # 让app直接成为主页
+    path('analysis/', include('analysis.urls'))  # 可视化的app
 
 ]

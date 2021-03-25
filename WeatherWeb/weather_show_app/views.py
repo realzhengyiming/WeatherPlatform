@@ -1,19 +1,20 @@
-from django.db.models import Q
+import json
+import time
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger  # 用来分页饿
 from django.db import connection
+from django.db.models import Count  # 直接使用models中的统计类来进行统计查询操作
+from django.db.models import Q
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 from rest_framework.response import Response
-from .forms import LoginForm, RegistrationForm
-import time
-from django.db.models import Avg, Max, Min, Count, Sum  # 直接使用models中的统计类来进行统计查询操作
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger  # 用来分页饿
-import json
-from django.http import HttpResponse, HttpResponseRedirect
 from rest_framework.views import APIView
 
+from .forms import LoginForm, RegistrationForm
 from .models import City, DateWeather
 
 
@@ -42,12 +43,10 @@ def testindex(request):  # 测试页
     result = fetchall_sql_dict("SELECT distinct(id),house_firstOnSale FROM `hotelapp_house` ")
     # print(result)
     # 然后转换成pandas进行一系列的筛选等
-    from django_pandas.io import read_frame
     # qs_dataframe = read_frame(qs=result)
     # print(qs_dataframe)
 
     import pandas as pd
-    from pandas import DataFrame
 
     df = pd.DataFrame(result)
     # print(df)
@@ -150,7 +149,7 @@ def fetchall_sql_dict(sql) -> [dict]:  # 这儿唯一有一个就是显示页面
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-@login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
+# @login_required(login_url='/weather_show_app/loginpage/')  # 默认主页，主页不用登录，但是收藏夹需要登录
 def index(request):  # 这儿唯一有一个就是显示页面的
     success_info = None
     if request.GET.get("success_info"):
@@ -158,13 +157,18 @@ def index(request):  # 这儿唯一有一个就是显示页面的
         print(success_info)
 
     nowdate = time.strftime('%Y-%m-%d', time.localtime(time.time()))
-    count_today = DateWeather.objects.filter(date=nowdate).aggregate(count=Count("id"))
+
+    # 总共的城市的数量
+    count_city = City.objects.all().aggregate(count=Count("name", distinct=True))  # todo 花里胡哨的样式晚点再慢慢调整
+    # count_weather = DateWeather
+    # count_today = DateWeather.objects.filter(date=nowdate).aggregate(count=Count("id"))
+    count_today = DateWeather.objects.all().aggregate(count=Count("id"))
     # count_today_city = Weather.objects.filter(date=nowdate).aggregate(count=Count("id", distinct=True))
     # count_total_city = Weather.objects.aggregate(count=Count("house_cityName", distinct=True))
     context = {
         'app_name': "天气分析",
-        'count_today': None,  # count_today,
-        'count_today_city': None,  # count_today_city,  # 今天总共爬了多少个城市
+        'count_today': count_today,  # None,  # count_today,
+        'count_today_city': count_city,  # None,  # count_today_city,  # 今天总共爬了多少个城市
         'count_total_city': None,  # count_total_city,
         'success_info': None  # success_info
     }
@@ -192,7 +196,7 @@ def loginPage(request):  # 登陆界面的,这个是自定义的
             if user:
                 login(request, user)
                 # return HttpResponse("Wellcome!")
-                return redirect('/weather_show_app')
+                return redirect('/')
             else:
                 return render(request, 'weather_show_app/loginPage.html',
                               context={'form': login_form, "error": "账号或者密码错误！"})
@@ -213,7 +217,7 @@ def register(request):  # 注册用户User
             # 这儿放登陆注册的
             # loginForm = LoginForm()
             request.session['success_info'] = 'register_success'
-            return redirect('/weather_show_app/loginpage/')
+            return redirect('/loginpage')  # todo 用命名空间的方式来进行操作
         else:
             return render(request, "weather_show_app/register.html", {"form": user_form,
                                                                       "error_message": "提交的账号密码不合法"})  # 这个是get的方式进来
@@ -224,7 +228,7 @@ def register(request):  # 注册用户User
 
 def userLogout(request):  # 登出
     logout(request)
-    return redirect("/weather_show_app/loginpage/")
+    return redirect("/loginpage/")
 
 
 @login_required(login_url='/weather_show_app/loginpage/')  # 爬虫数据页
@@ -267,29 +271,6 @@ def json_error(error_string="error", code=500, **kwargs):
 
 JsonResponse = json_response
 JsonError = json_error
-
-
-class loginView(APIView):  # 使用不同的试图来进行封装
-    def get(self, request, *args, **kwargs):
-        # return Response("fuck")
-        password = self.request.query_params.get("password")
-        username = self.request.query_params.get("account")
-        password = "1234567890zzz"
-        username = "robotor"
-        user = User.objects.filter(username=username).first()
-        print(user)
-        # return JsonResponse({"result":userSerializer.data})  # 这样就只是单纯的js就可以做到
-        return Response(userSerializer.data)
-
-    def post(self, request, *args, **kwargs):
-        password = self.request.query_params.get("password")
-        username = self.request.query_params.get("account")
-        print("port")
-        print(password)
-        print(username)
-        user = User.objects.filter(username=username, password=password).first()
-
-        return JsonResponse({"result": user.data})
 
 
 @login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
@@ -347,8 +328,6 @@ def predictPage(request):
 # 详细的页面
 # @login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
 def trainPage(request):
-    from sklearn.linear_model import LinearRegression
-    from sklearn.metrics import mean_squared_error, r2_score
     return render(request, 'weather_show_app/test.html', context={"app_name": "test"})
 
 

@@ -1,47 +1,27 @@
 import base64
 import datetime
-from io import BytesIO
-
-import pandas as pd
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from numpy.matlib import randn
-from pandas import DataFrame
-import uuid
-from django.db.models import Q
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
-from django.db import connection
-# from pyecharts.globals import ThemeType
-from django.urls import reverse
-from pyecharts.commons.utils import JsCode
-from pyecharts.globals import ThemeType, ChartType
-from django.core.cache import cache  # 导入缓存对象,redis存储
-# from rest_framework.response import Response
-# from requests import Response
-from rest_framework_extensions.cache.decorators import cache_response
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn import linear_model
-from sklearn.model_selection import train_test_split
-
-from .forms import LoginForm, RegistrationForm
-# from .Serializer import UserSerializer
-import time
-from django.db.models import Avg, Max, Min, Count, Sum  # 直接使用models中的统计类来进行统计查询操作
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger  # 用来分页饿
-
 ##### 后面开始pyechart绘图
 import json
-from random import randrange
-from django.http import HttpResponse, HttpResponseRedirect
-from rest_framework.views import APIView
-from pyecharts.charts import Bar, Pie, Line, Geo, BMap, Grid
-from pyecharts import options as opts
+# from .Serializer import UserSerializer
+import time
+from io import BytesIO
 
-from .models import City
+# from rest_framework.response import Response
+# from requests import Response
+import matplotlib.pyplot as plt
+import pandas as pd
+from django.core.cache import cache  # 导入缓存对象,redis存储
+from django.db import connection
+from django.db.models import Count  # 直接使用models中的统计类来进行统计查询操作
+from django.http import HttpResponse
+from pyecharts import options as opts
+from pyecharts.charts import Bar, Pie, Line, Geo
+# from pyecharts.globals import ThemeType
+from pyecharts.globals import ThemeType, ChartType
+from rest_framework.views import APIView
+from sklearn.model_selection import train_test_split
+
+from .models import City, DateWeather
 
 
 def fetchall_sql(sql) -> dict:  # 这儿唯一有一个就是显示页面的
@@ -147,15 +127,16 @@ class ChartView(APIView):  # 这个就是返回的组件
         return JsonResponse(json.loads(bar_base()))  # 这儿这个是返回json数据用来装到bar中的
 
 
-class PieView(APIView):  # 房型饼图
+class PieView(APIView):  # 房型饼图,天气饼图？good
     def get(self, request, *args, **kwargs):
         result = fetchall_sql(
-            "select house_type,count(house_type) from (select distinct house_id ,house_type from hotelapp_house  group by house_id,house_type ) hello group by house_type")
+            '''select state,count(state) from 
+            (select distinct id ,state from DateWeather  group by id,state )
+             hello group by state''')
         c = (
             Pie()
                 .add("", [z for z in zip([i[0] for i in result], [i[1] for i in result])])
-                # .add("",[list(z) for z in zip([x['house_type'] for x in house_type_count],[x['count'] for x in house_type_count])])
-                .set_global_opts(title_opts=opts.TitleOpts(title="总房屋类型"))
+                .set_global_opts(title_opts=opts.TitleOpts(title="收集的数据里面各种类型的天气占比"))
                 .set_series_opts(label_opts=opts.LabelOpts(
                 formatter="{b}: {c} | {d}%",
             ))
@@ -194,7 +175,7 @@ class getMonthPostTime2(APIView):  # 按各个月份来进行统计
         return JsonResponse(context)
 
 
-class timeLineView(APIView):
+class timeLineView(APIView):  # todo 改成了7天内，全国各地多条曲线，每个曲线是一种天气状态的数量。
     def get(self, request, *args, **kwargs):
         # week_name_list = getLatestSevenDay()  # 获得最近七天的日期 时间列折线图
         # 七天前的那个日期
@@ -203,9 +184,10 @@ class timeLineView(APIView):
         offset = datetime.timedelta(days=-6)
         # // 获取想要的日期的时间
         re_date = (today + offset).strftime('%Y-%m-%d')
-        house_sevenday = City.objects.filter(house_date__gte=re_date).values("house_date"). \
-            annotate(count=Count("house_date")).order_by("house_date")
-        week_name_list = [day['house_date'] for day in house_sevenday]
+        house_sevenday = DateWeather.objects.filter(date__gte=re_date).values("date"). \
+            annotate(count=Count("date")).order_by("date")
+
+        week_name_list = [day['date'] for day in house_sevenday]
         date_count = [day['count'] for day in house_sevenday]
         c = (
             Line(init_opts=opts.InitOpts(width="1600px", height="800px"))
@@ -245,7 +227,7 @@ class _postTime_cityName(APIView):  # todo 各个城市新增的东西 经纬度
             cache.set('price_cityName', temp_df, 3600 * 12)  # 设置缓存
 
         from pyecharts import options as opts
-        from pyecharts.charts import Map, Timeline
+        from pyecharts.charts import Timeline
         temp = temp_df.groupby(["house_cityName", "house_year"]).count().sort_values(["house_cityName", "house_year"],
                                                                                      ascending=True)  # 不同的数量的东西
         temp = temp.groupby('house_cityName').cumsum()
@@ -297,16 +279,14 @@ class _postTime_cityName(APIView):  # todo 各个城市新增的东西 经纬度
 
 class drawMap(APIView):  # 要加apiview # 美团房源数量热力图
     def get(self, request, *args, **kwargs):
-        from pyecharts import options as opts
-        from pyecharts.charts import Map
-        from pyecharts.faker import Faker
 
-        result = cache.get('house_city', None)  # 使用缓存，可以共享真好。
+        result = cache.get('weather_city', None)  # 使用缓存，可以共享真好。
         if result is None:  # 如果无，则向数据库查询数据
-            print("使用缓存房源城市统计")
+            print("读取缓存中的城市")
             result = fetchall_sql(
-                """select house_cityName,count(house_cityName) as count from  (SELECT distinct(house_id),house_cityName FROM  hotelapp_house) hello group by house_cityName""")
-            cache.set('house_city', result, 3600 * 12)  # 设置缓存
+                """select name,count(name) as count from 
+                 (SELECT distinct(id),name FROM  city) hello group by name;""")
+            cache.set('weather_city', result, 3600 * 12)  # 设置缓存
 
         else:
             pass
@@ -321,7 +301,7 @@ class drawMap(APIView):  # 要加apiview # 美团房源数量热力图
                 .set_series_opts(label_opts=opts.LabelOpts(is_show=False))
                 .set_global_opts(
                 visualmap_opts=opts.VisualMapOpts(),
-                title_opts=opts.TitleOpts(title="美团民宿房源热力图"),
+                title_opts=opts.TitleOpts(title="各个城市天气数据热力图"),
             )
                 .dump_options_with_quotes()
         )
@@ -670,8 +650,6 @@ class get_hostDraw(APIView):  # 按月份分，或者按年分
         else:
             pass
         from pyecharts.charts import Bar
-        from pyecharts.faker import Faker
-        from pyecharts.globals import ThemeType
         print("显示数据")
         # print(temp_df)
         # print(list(temp_df.host_name.values)[:50])
@@ -719,8 +697,6 @@ class get_hostReplay(APIView):
         else:
             pass
         from pyecharts.charts import Bar
-        from pyecharts.faker import Faker
-        from pyecharts.globals import ThemeType
         print("显示数据")
         temp_df = temp_df.sort_values(by=['host_replayRate', 'host_commentNum'], ascending=False)
         c = (
@@ -783,7 +759,6 @@ class diffcity_hostNum(APIView):  # 不同城市中的房东数量
     def get(self, request, *args, **kwargs):
         from pyecharts import options as opts
         from pyecharts.charts import Map
-        from pyecharts.faker import Faker
 
         temp_df = cache.get('diffcity_hostNum', None)  # 使用缓存，可以共享真好。
         if temp_df is None:  # 如果无，则向数据库查询数据
@@ -858,7 +833,6 @@ class _price_bar(APIView):
             # temp_df.index = pd.to_datetime(temp_df.house_firstOnSale)
             temp_df = pd.DataFrame(result)
             cache.set('_price_house_oriprice', temp_df, 3600 * 12)  # 设置缓存
-        from pyecharts import options as opts
         from pyecharts.charts import Bar
 
         temp1 = temp_df[['house_cityName', 'house_oriprice']]
@@ -888,8 +862,6 @@ class _price_bar(APIView):
 
 class _price_boxplot(APIView):
     def get(self, request, *args, **kwargs):
-        import pyecharts.options as opts
-        from pyecharts.charts import Grid, Boxplot, Scatter
         temp_df = cache.get('_price_house_oriprice', None)  # 使用缓存，可以共享真好。
         if temp_df is None:  # 如果无，则向数据库查询数据
             print("host,重新查询")
@@ -1043,7 +1015,6 @@ order by avg_price desc''')
         # data = [(x,y) for x,y in ]
         # data = zip([str(i) for i in temp_df.facility_name],[float(i) for i in temp_df.house_oriprice])
         from pyecharts.charts import Bar
-        from pyecharts.faker import Faker
         from pyecharts.globals import ThemeType
         c = (
             Bar({"theme": ThemeType.MACARONS})
@@ -1148,7 +1119,6 @@ class area_price_scatter(APIView):  # 价格和面积的散点图
             cache.set('area_price_scatter', temp_df, 3600 * 12)  # 设置缓存
         from pyecharts import options as opts
         from pyecharts.charts import Scatter
-        from pyecharts.faker import Faker
         print(temp_df.columns.values.tolist())
         temp_df = temp_df[(temp_df['house_area'] < 200.00) & (temp_df['house_oriprice'] < 1000)]
         # (temp_df['house_cityName'] == "惠州")]  # 200平方米都是不对的了
@@ -1192,8 +1162,6 @@ class area_price_location_scatter(APIView):  # 绘制出了 matplotlibd的图
             # temp_df.index = pd.to_datetime(temp_df.house_firstOnSale)
             temp_df = pd.DataFrame(result)
             cache.set('area_price_location_scatter', temp_df, 3600 * 12)  # 设置缓存
-        from pyecharts import options as opts
-        from pyecharts.charts import Geo
 
         temp_df = temp_df[(temp_df['house_area'] < 500.00) & (temp_df['house_oriprice'] < 6000)]  # &
         #                   (temp_df['house_cityName'] == "惠州")]  # 200平方米都是不对的了
@@ -1295,7 +1263,6 @@ class house_content(APIView):
         print(len(temp_df))
         from pyecharts import options as opts
         from pyecharts.charts import Grid, Liquid
-        from pyecharts.commons.utils import JsCode
 
         temp_toilet = round(len(temp_df[temp_df['house_toilet'] > 0]) / len(temp_df), 2)
         temp_living = round(len(temp_df[temp_df['house_living_room'] > 0]) / len(temp_df), 2)
@@ -1480,7 +1447,6 @@ class predictPrice(APIView):  # 绘制出了 matplotlibd的图
         # print(type(temp_df['house_area']))
         print(temp_df.info())
         from matplotlib import pyplot as plt
-        import seaborn as sns
 
         plt.rcParams['font.sans-serif'] = ['simhei']  # 解决中文显示问题-设置字体为黑体
         plt.rcParams['font.family'] = 'simhei'

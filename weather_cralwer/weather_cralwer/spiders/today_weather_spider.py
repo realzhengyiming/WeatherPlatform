@@ -1,10 +1,12 @@
+import datetime
 import json
+from typing import List
 
 import scrapy
-from bs4 import BeautifulSoup
 
+from weather_cralwer.weather_cralwer.clean_util import temperature_process, aqi_process
 from weather_cralwer.weather_cralwer.db_util import mysql_conn_instance  # todo 修好这个东西 找不到爬虫的问题
-from weather_cralwer.weather_cralwer.items import WeatherItem
+from weather_cralwer.weather_cralwer.items import DateWeatherItem, WeatherDetailItem
 
 
 class ChinaWeatherSpider(scrapy.Spider):
@@ -20,8 +22,9 @@ class ChinaWeatherSpider(scrapy.Spider):
         },
         'DOWNLOAD_DELAY': 1,
         'ITEM_PIPELINES': {
-            'weather_cralwer.weather_cralwer.pipelines.MysqlPipline': 2,
-        }
+            'weather_cralwer.weather_cralwer.pipelines.DateWeatherPipeline': 2,
+        },
+        # "DOWNLOAD_DELAY": 0.5,
 
     }
 
@@ -29,7 +32,7 @@ class ChinaWeatherSpider(scrapy.Spider):
         all_city_list = mysql_conn_instance.query("select * from city ;")
 
         # all_city_list = [{"name": "北京", "pinyin": "beijing", "code": '101010100'}]
-        for city_dict in all_city_list[:2]:
+        for city_dict in all_city_list:
             if "pinyin" in city_dict:
                 city_code = city_dict['code']
                 city_name = city_dict['name']
@@ -42,7 +45,55 @@ class ChinaWeatherSpider(scrapy.Spider):
             else:
                 self.logger.info("非国内的跳过")
 
-        pass
+    def parse_24hour_data(self, script_string: str):
+        script_string = script_string[script_string.index('=') + 1:-2]  # 移除改var data=将其变为json数据
+        waather_json = json.loads(script_string)
+        today_hour_weather = waather_json['od']['od2']  # 找到当天的数据
+        today_24hours_weather = []  # 存放当天的数据
+        count = 0
+        # now_date = datetime.datetime.now().strftime("%Y-%m-")
+        for i in today_hour_weather:
+            if count <= 23:
+                hour_weather = WeatherDetailItem()
+                hour_weather['hour'] = i['od21']  # 添加时间
+                hour_weather['temperature'] = i['od22']  # 添加当前时刻温度
+                hour_weather['wind_direction'] = i['od24']  # 添加当前时刻风力方向
+                hour_weather['wind_power'] = i['od25']  # 添加当前时刻风级
+                hour_weather["precipitation"] = i['od26']  # 添加当前时刻降水量
+                hour_weather["relative_humidity"] = i['od27']  # 添加当前时刻相对湿度
+                hour_weather["AQI"] = aqi_process(i['od28'])  # 添加当前时刻控制质量
+                today_24hours_weather.append(hour_weather)
+            count = count + 1
+
+        return today_24hours_weather
+
+    def parse_7days_data(self, html: str, city_name: str) -> List[DateWeatherItem]:
+
+        now_date = datetime.datetime.now().strftime('%Y-%m-')
+
+        html = html.replace("\n", "")
+        html = html[html.find("=") + 1:]
+        html_json = json.loads(html)
+        week_date_weather = html_json.get("7d")
+        week_date_weather_list = []
+        for day in week_date_weather:
+            day_short_info_item = DateWeatherItem()
+            temp_temperature_list = [t.split(",")[3] for t in day]
+            min_temperature = min(temp_temperature_list)
+            max_temperature = max(temp_temperature_list)
+            temp_day = day[0].split(",")
+            day_short_info_item['date'] = now_date + temp_day[0].split("日")[0]  # 获得 日期的号
+            day_short_info_item['state'] = temp_day[2]
+            day_short_info_item['humidity'] = 0.0
+            day_short_info_item['city_name'] = city_name  # 这个是城市名，还需要改成真正的城市对象才可以
+            day_short_info_item['max_temperature'] = temperature_process(max_temperature)
+            day_short_info_item['min_temperature'] = temperature_process(min_temperature)
+            day_short_info_item['wind_direction'] = temp_day[4]
+            day_short_info_item['wind_power'] = temp_day[5]
+
+            week_date_weather_list.append(day_short_info_item)  # 里面这个是item
+
+        return week_date_weather_list
 
     def parse(self, response):
         """处理得到有用信息保存数据文件"""
@@ -50,45 +101,19 @@ class ChinaWeatherSpider(scrapy.Spider):
         observe24h, hour3data = None, None
         for one in all_script_text:
             if one.find("var observe24h_data") != -1:
-                observe24h = one
+                observe24h = one  # 24小时天气数据
             elif one.find("var hour3data") != -1:
-                hour3data = one
+                hour3data = one  # 这个是7天天气概括数据
 
-        script_string = observe24h
-        script_string = script_string[script_string.index('=') + 1:-2]  # 移除改var data=将其变为json数据
-        waather_json = json.loads(script_string)
-        today_hour_weather = waather_json['od']['od2']  # 找到当天的数据
-        today_weather_data = []  # 存放当天的数据
-        weather_item = WeatherItem()
-        count = 0
-        for i in today_hour_weather:
-            day_hour_list = []
-            if count <= 23:
-                day_hour_list.append(i['od21'])  # 添加时间
-                day_hour_list.append(i['od22'])  # 添加当前时刻温度
-                day_hour_list.append(i['od24'])  # 添加当前时刻风力方向
-                day_hour_list.append(i['od25'])  # 添加当前时刻风级
-                day_hour_list.append(i['od26'])  # 添加当前时刻降水量
-                day_hour_list.append(i['od27'])  # 添加当前时刻相对湿度
-                day_hour_list.append(i['od28'])  # 添加当前时刻控制质量
-                today_weather_data.append(day_hour_list)
-            count = count + 1
-
-        # today data
-        weather_item['extend_detail'] = today_hour_weather
-
+        today_24hours_weather = self.parse_24hour_data(observe24h)
         # 下面爬取7天的数据
-        # ul = data.find('ul')  # 找到所有的ul标签
-        # li = ul.find_all('li')  # 找到左右的li标签
-        # i = 0  # 控制爬取的天数
+        # hour3data
 
-        # 直接抓取所有的数据  TODO ，收藏夹增加城市收藏;
-        # TODO (2-7 00:40 还有一个问题就是那个 7天的列表怎么获得呢？
+        city_name = response.meta.get("city_name")
+        seven_days_weather_list = self.parse_7days_data(hour3data, city_name)
+        today_weather = seven_days_weather_list[0]
+        today_weather['extend_detail'] = today_24hours_weather
 
-        all_li = response.xpath("//div[@id='7d']/ul/li").getall()
         # return today_weather_data, week_weather_data
-
-        yield weather_item
-
-    # def parse(self, response):
-    #     pass
+        for day_weather_item in seven_days_weather_list:
+            yield day_weather_item

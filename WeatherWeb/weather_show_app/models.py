@@ -58,5 +58,5 @@ class Favourite(models.Model):  # 收藏夹
     user = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
     city = models.ManyToManyField('City', related_name="fav_city")
 
-    # def __str__(self):
-    #     return str(self.city.name)
+    def __str__(self):
+        return str(self.city.name)
