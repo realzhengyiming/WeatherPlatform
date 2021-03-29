@@ -21,7 +21,7 @@ from pyecharts.globals import ThemeType, ChartType
 from rest_framework.views import APIView
 from sklearn.model_selection import train_test_split
 
-from .models import City, DateWeather
+from .models import DateWeather
 
 
 def fetchall_sql(sql) -> dict:  # 这儿唯一有一个就是显示页面的
@@ -101,14 +101,14 @@ JsonError = json_error
 ## 数据概略处的图
 # 最近7天爬虫数据爬取
 def bar_base() -> Bar:  # 返回给前端用来显示图的json设置,按城市分组来统计数量
-    nowdate = time.strftime('%Y-%m-%d', time.localtime(time.time()))
-    count_total_city = City.objects.filter(house_date=nowdate).values("house_cityName").annotate(
-        count=Count("house_cityName")).order_by("-count")
+    nowdate = time.strftime('%Y-%m-%d', time.localtime(time.time()))  # todo 这儿是做什么的呢。这儿是修改成多表查询，然后才是显示对图进行分析工作。
+    count_total_city = DateWeather.objects.filter(date=nowdate).values("city").annotate(
+        count=Count("city")).order_by("-count")
     # for i in count_total_city:
     #     print(i['house_cityName']," ",str(i['count']))
     c = (
         Bar(init_opts=opts.InitOpts(theme=ThemeType.WONDERLAND))
-            .add_xaxis([city['house_cityName'] for city in count_total_city])
+            .add_xaxis([city['city'] for city in count_total_city])
             .add_yaxis("房源数量", [city['count'] for city in count_total_city])
             # .add_yaxis("商家B", [randrange(0, 100) for _ in range(6)])
             # .set_global_opts(title_opts=opts.TitleOpts(title="总房屋类型"))
@@ -284,8 +284,8 @@ class drawMap(APIView):  # 要加apiview # 美团房源数量热力图
         if result is None:  # 如果无，则向数据库查询数据
             print("读取缓存中的城市")
             result = fetchall_sql(
-                """select name,count(name) as count from 
-                 (SELECT distinct(id),name FROM  city) hello group by name;""")
+                """select direct_city_name,count(direct_city_name) as count from 
+                 (SELECT distinct(id),direct_city_name FROM  city where is_city=1) result group by direct_city_name;""")
             cache.set('weather_city', result, 3600 * 12)  # 设置缓存
 
         else:
@@ -294,14 +294,14 @@ class drawMap(APIView):  # 要加apiview # 美团房源数量热力图
             Geo()
                 .add_schema(maptype="china")
                 .add(
-                "房源",
+                "城市",
                 [z for z in zip([i[0] for i in result], [i[1] for i in result])],
                 type_=ChartType.HEATMAP,
             )
                 .set_series_opts(label_opts=opts.LabelOpts(is_show=False))
                 .set_global_opts(
                 visualmap_opts=opts.VisualMapOpts(),
-                title_opts=opts.TitleOpts(title="各个城市天气数据热力图"),
+                title_opts=opts.TitleOpts(title="各个城市天气数据量热力图"),
             )
                 .dump_options_with_quotes()
         )
