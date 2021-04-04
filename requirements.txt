@@ -13,3 +13,6 @@ uwsgi
 django_redis
 DBUtils
 fake_useragent
+scrapy-djangoitem
+scrapy
+xpinyin
