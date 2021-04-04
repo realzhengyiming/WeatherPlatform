@@ -7,7 +7,7 @@ from django.db import models
 class DateWeather(models.Model):  # 天气概括表
     class Meta:
         db_table = 'DateWeather'
-        unique_together = (("date", "city"),)
+        unique_together = ("date", "city")
 
     dressing_index = models.CharField(default="", max_length=50)  # 穿衣指数  # todo 保存哪儿需要改成update，看看怎么进行操作。
     dressing_index_desc = models.TextField(default="")  # 穿衣指数语言描述  # todo 保存哪儿需要改成update，看看怎么进行操作。
@@ -27,9 +27,9 @@ class DateWeather(models.Model):  # 天气概括表
     # extend_detail = models.TextField(blank=True)  # 这个是json的东西
 
 
-class WeatherDetail(models.Model):  # h每小时的具体的天气情况
+class HourWeather(models.Model):  # h每小时的具体的天气情况
     class Meta:
-        db_table = 'WeatherDetail'
+        db_table = 'HourWeather'
 
     Weather = models.ForeignKey("DateWeather", on_delete=models.CASCADE, related_name='DateWeather')
 

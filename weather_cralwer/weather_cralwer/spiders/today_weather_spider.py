@@ -1,12 +1,13 @@
 import datetime
 import json
+import time
 from typing import List
 
 import scrapy
 
 from weather_cralwer.weather_cralwer.clean_util import temperature_process, aqi_process
 from weather_cralwer.weather_cralwer.db_util import mysql_conn_instance  # todo 修好这个东西 找不到爬虫的问题
-from weather_cralwer.weather_cralwer.items import DateWeatherItem, WeatherDetailItem
+from weather_cralwer.weather_cralwer.items import DateWeatherItem, HourWeatherItem
 
 
 class ChinaWeatherSpider(scrapy.Spider):
@@ -31,8 +32,9 @@ class ChinaWeatherSpider(scrapy.Spider):
     def start_requests(self):
         all_city_list = mysql_conn_instance.query("select * from city ;")
 
-        # all_city_list = [{"name": "北京", "pinyin": "beijing", "code": '101010100'}]
+        all_city_list = [{"name": "北京", "pinyin": "beijing", "code": '101010100'}]
         for city_dict in all_city_list:
+
             if "pinyin" in city_dict:
                 city_code = city_dict['code']
                 city_name = city_dict['name']
@@ -51,10 +53,12 @@ class ChinaWeatherSpider(scrapy.Spider):
         today_hour_weather = waather_json['od']['od2']  # 找到当天的数据
         today_24hours_weather = []  # 存放当天的数据
         count = 0
+        nowdate = time.strftime('%Y-%m-%d', time.localtime(time.time()))  # todo 这儿是做什么的呢。这儿是修改成多表查询，然后才是显示对图进行分析工作。
+
         # now_date = datetime.datetime.now().strftime("%Y-%m-")
         for i in today_hour_weather:
             if count <= 23:
-                hour_weather = WeatherDetailItem()
+                hour_weather = HourWeatherItem()
                 hour_weather['hour'] = i['od21']  # 添加时间
                 hour_weather['temperature'] = i['od22']  # 添加当前时刻温度
                 hour_weather['wind_direction'] = i['od24']  # 添加当前时刻风力方向
@@ -62,6 +66,8 @@ class ChinaWeatherSpider(scrapy.Spider):
                 hour_weather["precipitation"] = i['od26']  # 添加当前时刻降水量
                 hour_weather["relative_humidity"] = i['od27']  # 添加当前时刻相对湿度
                 hour_weather["AQI"] = aqi_process(i['od28'])  # 添加当前时刻控制质量
+                hour_weather["belong_to_date"] = nowdate  # 添加当前时刻控制质量
+
                 today_24hours_weather.append(hour_weather)
             count = count + 1
 
@@ -98,6 +104,9 @@ class ChinaWeatherSpider(scrapy.Spider):
     def parse(self, response):
         """处理得到有用信息保存数据文件"""
         all_script_text = response.xpath("//script/text()").getall()  # hour3data;  observe24h_data
+        dressing_index = response.xpath('//*[@id="chuanyi"]/a/span/text()').extract_first()
+        dressing_index_desc = response.xpath('//*[@id="chuanyi"]/a/p/text()').extract_first()  # 穿衣指数描述
+
         observe24h, hour3data = None, None
         for one in all_script_text:
             if one.find("var observe24h_data") != -1:
@@ -112,6 +121,10 @@ class ChinaWeatherSpider(scrapy.Spider):
         city_name = response.meta.get("city_name")
         seven_days_weather_list = self.parse_7days_data(hour3data, city_name)
         today_weather = seven_days_weather_list[0]
+        # 只能获得当天的穿衣指数，其他天得其他时候进行抓取。
+        today_weather['dressing_index'] = '' if not dressing_index else dressing_index  # 穿衣指数
+        today_weather['dressing_index_desc'] = "" if not dressing_index_desc else dressing_index_desc
+
         today_weather['extend_detail'] = today_24hours_weather
 
         # return today_weather_data, week_weather_data

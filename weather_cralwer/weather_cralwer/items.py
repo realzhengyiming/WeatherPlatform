@@ -5,7 +5,7 @@
 from scrapy import Item, Field
 
 from scrapy_djangoitem import DjangoItem
-from weather_show_app.models import DateWeather, WeatherDetail, Favourite, City
+from weather_show_app.models import DateWeather, HourWeather, Favourite, City
 
 
 class DateWeatherItem(DjangoItem):
@@ -14,8 +14,8 @@ class DateWeatherItem(DjangoItem):
     extend_detail = Field()  # 这个是json的东西
 
 
-class WeatherDetailItem(DjangoItem):
-    django_model = WeatherDetail
+class HourWeatherItem(DjangoItem):
+    django_model = HourWeather
 
 
 class FavouriteItem(DjangoItem):

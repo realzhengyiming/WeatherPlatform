@@ -175,7 +175,7 @@ class getMonthPostTime2(APIView):  # 按各个月份来进行统计
         return JsonResponse(context)
 
 
-class timeLineView(APIView):  # todo 改成了7天内，全国各地多条曲线，每个曲线是一种天气状态的数量。
+class timeLineView(APIView):  # todo 改成了7天内，全国各地多条曲线，每个曲线是一种天气状态的数量。 应该选择原本是line 的图来直接修改好一些，不然自己容易有些乱
     def get(self, request, *args, **kwargs):
         # week_name_list = getLatestSevenDay()  # 获得最近七天的日期 时间列折线图
         # 七天前的那个日期
@@ -296,12 +296,12 @@ class drawMap(APIView):  # 要加apiview # 美团房源数量热力图
                 .add(
                 "城市",
                 [z for z in zip([i[0] for i in result], [i[1] for i in result])],
-                type_=ChartType.HEATMAP,
+                type_=ChartType.SCATTER,  # 修改图的类型
             )
                 .set_series_opts(label_opts=opts.LabelOpts(is_show=False))
                 .set_global_opts(
                 visualmap_opts=opts.VisualMapOpts(),
-                title_opts=opts.TitleOpts(title="各个城市天气数据量热力图"),
+                title_opts=opts.TitleOpts(title="抓取到的地级市"),
             )
                 .dump_options_with_quotes()
         )
@@ -692,6 +692,7 @@ class get_hostReplay(APIView):
                 '''SELECT distinct host_id,host_name,host_RoomNum,host_replayRate,host_commentNum FROM `hotelapp_host` order by host_RoomNum DESC''')
             temp_df = pd.DataFrame(result)
             # 都使用df来进行处理和显示
+            print(temp_df.head(5))
             # temp_df.index = pd.to_datetime(temp_df.house_firstOnSale)
             cache.set('host_result', temp_df, 3600 * 12)  # 设置缓存
         else:
@@ -755,67 +756,76 @@ class _price(APIView):
         return JsonResponse(json.loads(c))
 
 
-class diffcity_hostNum(APIView):  # 不同城市中的房东数量
+class history_weather_line(APIView):  # 不同城市中的房东数量  # todo 改成当天天气数据变化曲线图，api如何传递参数
     def get(self, request, *args, **kwargs):
         from pyecharts import options as opts
-        from pyecharts.charts import Map
 
-        temp_df = cache.get('diffcity_hostNum', None)  # 使用缓存，可以共享真好。
+        # 第一步： 写好sql，
+        # 第二部： 把返回的结果按要求组合起来。
+
+        temp_df = cache.get('history_weather_line', None)  # 使用缓存，可以共享真好。
         if temp_df is None:  # 如果无，则向数据库查询数据
-            print("diffcity_hostNum,重新查询")
+            print("today_weather_line,重新查询")
 
             result = fetchall_sql_dict(
-                '''SELECT
-                        house_cityName,
-                        count( house_cityName ) count_city 
-                    FROM
-                        (
-                        SELECT
-                            host_name,
-                            house_cityName,
-                            count( house_cityName ) total 
-                        FROM
-                            (
-                            SELECT DISTINCT
-                                a.house_id,
-                                a.house_title,
-                                b.host_name,
-                                b.host_id,
-                                a.house_cityName 
-                            FROM
-                                hotelapp_house a
-                                JOIN hotelapp_house_house_host c ON c.house_id = a.id
-                                JOIN hotelapp_host b ON b.id = c.host_id 
-                            ) result    
-                        GROUP BY
-                            host_name,
-                            house_cityName -- 	house_id
-                            ORDER BY       --   host_name,
-                            total DESC 
-                        ) result2 
-                    GROUP BY
-                        house_cityName 
-                    ORDER BY
-                        count_city DESC''')
+                '''select * from HourWeather where weather_id = (
+                select id from DateWeather where city_id=(
+                select id from City where name='北京') 
+                and date='2021-03-30') 
+                and belong_to_date ='2021-03-30' order by hour ;
+                ''')  # 用line？  # 按24小时进行排序才可以
+
             # 都使用df来进行处理和显示
             # temp_df.index = pd.to_datetime(temp_df.house_firstOnSale)
             temp_df = pd.DataFrame(result)
-            cache.set('diffcity_hostNum', temp_df, 3600 * 12)  # 设置缓存
+            print(temp_df.head(5))
+            cache.set('history_weather_line', temp_df, 3600 * 12)  # 设置缓存
+
+        week_name_list = ['0点', "1点", "2点", "3点", "4点", '5点', '6点', '7点', '8点', '9点', '10点', '11点', '12点',
+                          '13点', '14点', '15点', '16点', '17点', '18点', '19点', '20点', '21点', '22点', '23点']
+        high_temperature = [i for i in list(temp_df.temperature)]  # 改成按当天的 按 1～23 ，
+        # low_temperature =  [i for i in list(temp_df.relative_humidity)]
+
         c = (
-            Map()
-                .add(
-                "各个城市房东的数量",
-                [list(z) for z in zip([str(i) for i in temp_df.house_cityName],
-                                      [int(i) for i in temp_df.count_city])],
-                "china-cities",
-                label_opts=opts.LabelOpts(is_show=False),
+            Line(init_opts=opts.InitOpts(width="1600px", height="800px"))  # 为什么没反应
+                .add_xaxis(xaxis_data=week_name_list)
+                .add_yaxis(
+                series_name="最高气温",
+                y_axis=high_temperature,
+                markpoint_opts=opts.MarkPointOpts(
+                    data=[
+                        opts.MarkPointItem(type_="max", name="最大值"),
+                        opts.MarkPointItem(type_="min", name="最小值"),
+                    ]
+                ),
+                markline_opts=opts.MarkLineOpts(
+                    data=[opts.MarkLineItem(type_="average", name="平均值")]
+                ),
             )
+            #     .add_yaxis(
+            #     series_name="最低气温",
+            #     # y_axis=low_temperature,
+            #     markpoint_opts=opts.MarkPointOpts(
+            #         data=[opts.MarkPointItem(value=-2, name="当天最低气温", x=1, y=-1.5)]
+            #     ),
+            #     markline_opts=opts.MarkLineOpts(
+            #         data=[
+            #             opts.MarkLineItem(type_="average", name="平均值"),
+            #             opts.MarkLineItem(symbol="none", x="90%", y="max"),
+            #             opts.MarkLineItem(symbol="circle", type_="max", name="最高点"),
+            #         ]
+            #     ),
+            # )
+
                 .set_global_opts(
-                title_opts=opts.TitleOpts(title="抓取的的城市中各城市房东数量"),
-                visualmap_opts=opts.VisualMapOpts(),
+                title_opts=opts.TitleOpts(title="当天24小时温度情况", subtitle="每小时温度"),
+                tooltip_opts=opts.TooltipOpts(trigger="axis"),
+                toolbox_opts=opts.ToolboxOpts(is_show=True),
+                xaxis_opts=opts.AxisOpts(type_="category", boundary_gap=False),
             )
                 .dump_options_with_quotes()
         )
+
         return JsonResponse(json.loads(c))
 
 

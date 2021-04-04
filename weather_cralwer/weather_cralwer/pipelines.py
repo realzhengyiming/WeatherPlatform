@@ -1,28 +1,38 @@
 import django
-from twisted.enterprise import adbapi
-from pymysql import cursors
 
-from weather_cralwer.weather_cralwer.db_util import mysql_conn_instance
-from weather_cralwer.weather_cralwer.items import DateWeather, WeatherDetail, CityItem, FavouriteItem, DateWeatherItem
-from weather_show_app.models import City  # 改成才可以，什么鬼》》。。 todo
-
-
-# class MysqlPipline:
-#
-#     @staticmethod
-#     def get_insert_weather_sql(item):
-#         columns_list = ",".join([x for x in item.keys()])
-#         value_list = ",".join([f'"{x}"' for x in item.values()])
-#         wind_sql = f"insert into Weather ({columns_list}) values ({value_list})"
-#         return wind_sql
-#
-#     def process_item(self, item, spider):
-#         if isinstance(item, DateWeather):
-#             wind_sql = self.get_insert_weather_sql(item)
-#             mysql_conn_instance.query(wind_sql)
+from weather_cralwer.weather_cralwer.items import DateWeather, DateWeatherItem
+from weather_show_app.models import City, HourWeather  # 改成才可以，什么鬼》》。。 todo
 
 
 class DateWeatherPipeline:
+    def insert_hour_weather(self, spider, item):  # check hour weather exist
+        belong_to_date = item['belong_to_date']
+        hour = item['hour']
+
+        try:
+            hour_weather = HourWeather.objects.get(hour=hour, belong_to_date=belong_to_date)
+            if not hour_weather:
+                hour_weather.save(commit=True)
+            else:
+                spider.logger.info("已经存在了，就不在插入")
+        except Exception as e:
+            spider.logger.info(e)
+
+    def update_date_weather(self, spider, item):
+        date = item['date']
+        city_name = item['city_name']
+        # 查询到城市id
+        city_result = City.objects.filter(name=city_name)
+        if not city_result:
+            spider.logger.error("不存在这个城市!")
+            return item
+        else:
+            city = city_result[0]
+            data_weather = DateWeather.objects.get(city=city.id, date=date)
+            if 'dressing_index' in item.keys():
+                data_weather.dressing_index = item['dressing_index']
+                data_weather.save()
+
     def process_item(self, item, spider):
         if isinstance(item, DateWeatherItem):
             # 先保存多的数量的对象，然后在把多的数量的对象存进来保存少的对象
@@ -40,7 +50,8 @@ class DateWeatherPipeline:
             try:
                 item.save(commit=True)  # 保存后就有id了吗
             except django.db.utils.IntegrityError:
-                spider.logger.info("已经有了这天的数据")
+                self.update_date_weather(spider, item)
+                spider.logger.info(f"更新成功！{item}")
 
             if "extend_detail" in item.keys() and not not item['extend_detail']:  # 如果有细节，把24小时细节补上
                 today_24hours_weather_list = item['extend_detail']
@@ -52,8 +63,7 @@ class DateWeatherPipeline:
                     today_weather = today_weather_object_list[0]
                     for hour_weather in today_24hours_weather_list:
                         hour_weather['Weather'] = today_weather
-                        hour_weather.save(commit=True)
-
+                        self.insert_hour_weather(spider, hour_weather)
 # if __name__ == '__main__':
 #     any = {"name": "zhengyiming", "gender": "man"}
 #     columns = ",".join([x for x in any.keys()])
