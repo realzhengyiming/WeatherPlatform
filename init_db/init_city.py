@@ -85,5 +85,5 @@ def fill_city_type():  # is_direct_city
 
 
 if __name__ == '__main__':  # 写入城市代码和拼音
-    init_city_table_and_city_data()
+    # init_city_table_and_city_data()
     fill_city_type()
