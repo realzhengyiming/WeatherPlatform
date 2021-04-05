@@ -38,10 +38,10 @@ def init_city_table_and_city_data():
     for i in result:
         sql = ""
         if 'pinyin' in i:
-            sql = f'insert into city (name,pinyin,code) value ("{i["name"]}","{i["pinyin"]}","{i["id"]}")'
+            sql = f'insert into City (name,pinyin,code) value ("{i["name"]}","{i["pinyin"]}","{i["id"]}")'
         else:
             pinyin = p.get_pinyin(i["name"], "")
-            sql = f'insert into city (name,pinyin,code) value ("{i["name"]}","{pinyin}","{i["id"]}")'
+            sql = f'insert into City (name,pinyin,code) value ("{i["name"]}","{pinyin}","{i["id"]}")'
         try:
             cursor.execute(sql)
             mysql_conn.commit()
@@ -55,7 +55,7 @@ def init_city_table_and_city_data():
 
 def fill_city_type():  # is_direct_city
     cursor = mysql_conn.cursor()
-    cursor.execute("select name from city;")
+    cursor.execute("select name from City;")
     read_all_city_name = cursor.fetchall()
     for city_name in read_all_city_name:
 
