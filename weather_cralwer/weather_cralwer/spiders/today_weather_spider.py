@@ -32,7 +32,7 @@ class ChinaWeatherSpider(scrapy.Spider):
     def start_requests(self):
         all_city_list = mysql_conn_instance.query("select * from city ;")
 
-        all_city_list = [{"name": "北京", "pinyin": "beijing", "code": '101010100'}]
+        # all_city_list = [{"name": "北京", "pinyin": "beijing", "code": '101010100'}]
         for city_dict in all_city_list:
 
             if "pinyin" in city_dict:
