@@ -1,8 +1,8 @@
 from xpinyin import Pinyin
 
 from init_db.city_lists import CITY_LIST
-from WeatherWeb.referer.backup.mysql_coon import mysql_conn
-from WeatherWeb.referer.backup.new_city_code import city_and_code
+from init_db.mysql_coon import mysql_conn
+from init_db.new_city_code import city_and_code
 
 
 def get_city_and_city_pinyin():
