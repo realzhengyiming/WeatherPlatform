@@ -100,7 +100,7 @@ JsonError = json_error
 
 ## 数据概略处的图
 # 最近7天爬虫数据爬取
-def bar_base() -> Bar:  # 返回给前端用来显示图的json设置,按城市分组来统计数量
+def bar_base() -> Bar:  # 返回给前端用来显示图的json设置,按城市分组来统计数量  # todo这个图我暂时不用了把
     nowdate = time.strftime('%Y-%m-%d', time.localtime(time.time()))  # todo 这儿是做什么的呢。这儿是修改成多表查询，然后才是显示对图进行分析工作。
     count_total_city = DateWeather.objects.filter(date=nowdate).values("city").annotate(
         count=Count("city")).order_by("-count")
@@ -130,16 +130,17 @@ class ChartView(APIView):  # 这个就是返回的组件
 class PieView(APIView):  # 房型饼图,天气饼图？good
     def get(self, request, *args, **kwargs):
         result = fetchall_sql(
-            '''select state,count(state) from 
+            '''select state,count(state) counter from 
             (select distinct id ,state from DateWeather  group by id,state )
-             hello group by state''')
+             hello group by state order by counter''')
         c = (
             Pie()
                 .add("", [z for z in zip([i[0] for i in result], [i[1] for i in result])],
-                     center=["35%", "50%"],
+                     # center=["35%", "50%"],
                      )
-                .set_global_opts(title_opts=opts.TitleOpts(title="收集的数据里面各种类型的天气占比"),
-                                 legend_opts=opts.LegendOpts(pos_left="15%"),
+                .set_global_opts(title_opts=opts.TitleOpts(title="天气类型"),
+                                 legend_opts=opts.LegendOpts(pos_left="15%",
+                                                             type_='scroll'),
 
                                  )
                 .set_series_opts(label_opts=opts.LabelOpts(
@@ -654,16 +655,6 @@ class get_hostDraw(APIView):  # 按月份分，或者按年分
             cache.set('host_result', temp_df, 3600 * 12)  # 设置缓存
         else:
             pass
-        from pyecharts.charts import Bar
-        print("显示数据")
-        # print(temp_df)
-        # print(list(temp_df.host_name.values)[:50])
-        # print(list(temp_df.host_RoomNum.values)[:50])
-        # for i in :
-
-        #
-        # (type(i))
-        # temp_df = temp_df.sort_values(by='host_RoomNum',ascending=False)
         c = (
             Bar()
                 .add_xaxis(list(temp_df.host_name.values)[:10])
