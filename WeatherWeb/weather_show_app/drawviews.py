@@ -135,8 +135,13 @@ class PieView(APIView):  # 房型饼图,天气饼图？good
              hello group by state''')
         c = (
             Pie()
-                .add("", [z for z in zip([i[0] for i in result], [i[1] for i in result])])
-                .set_global_opts(title_opts=opts.TitleOpts(title="收集的数据里面各种类型的天气占比"))
+                .add("", [z for z in zip([i[0] for i in result], [i[1] for i in result])],
+                     center=["35%", "50%"],
+                     )
+                .set_global_opts(title_opts=opts.TitleOpts(title="收集的数据里面各种类型的天气占比"),
+                                 legend_opts=opts.LegendOpts(pos_left="15%"),
+
+                                 )
                 .set_series_opts(label_opts=opts.LabelOpts(
                 formatter="{b}: {c} | {d}%",
             ))
@@ -285,7 +290,7 @@ class drawMap(APIView):  # 要加apiview # 美团房源数量热力图
             print("读取缓存中的城市")
             result = fetchall_sql(
                 """select direct_city_name,count(direct_city_name) as count from 
-                 (SELECT distinct(id),direct_city_name FROM  city where is_city=1) result group by direct_city_name;""")
+                 (SELECT distinct(id),direct_city_name FROM  City where is_city=1) result group by direct_city_name;""")
             cache.set('weather_city', result, 3600 * 12)  # 设置缓存
 
         else:
@@ -802,20 +807,20 @@ class history_weather_line(APIView):  # 不同城市中的房东数量  # todo �
                     data=[opts.MarkLineItem(type_="average", name="平均值")]
                 ),
             )
-            #     .add_yaxis(
-            #     series_name="最低气温",
-            #     # y_axis=low_temperature,
-            #     markpoint_opts=opts.MarkPointOpts(
-            #         data=[opts.MarkPointItem(value=-2, name="当天最低气温", x=1, y=-1.5)]
-            #     ),
-            #     markline_opts=opts.MarkLineOpts(
-            #         data=[
-            #             opts.MarkLineItem(type_="average", name="平均值"),
-            #             opts.MarkLineItem(symbol="none", x="90%", y="max"),
-            #             opts.MarkLineItem(symbol="circle", type_="max", name="最高点"),
-            #         ]
-            #     ),
-            # )
+                #     .add_yaxis(
+                #     series_name="最低气温",
+                #     # y_axis=low_temperature,
+                #     markpoint_opts=opts.MarkPointOpts(
+                #         data=[opts.MarkPointItem(value=-2, name="当天最低气温", x=1, y=-1.5)]
+                #     ),
+                #     markline_opts=opts.MarkLineOpts(
+                #         data=[
+                #             opts.MarkLineItem(type_="average", name="平均值"),
+                #             opts.MarkLineItem(symbol="none", x="90%", y="max"),
+                #             opts.MarkLineItem(symbol="circle", type_="max", name="最高点"),
+                #         ]
+                #     ),
+                # )
 
                 .set_global_opts(
                 title_opts=opts.TitleOpts(title="当天24小时温度情况", subtitle="每小时温度"),
