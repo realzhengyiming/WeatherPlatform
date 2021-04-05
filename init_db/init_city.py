@@ -42,7 +42,7 @@ def init_city_table_and_city_data():
             sql = f'insert into City (name,pinyin,code,is_city) value ("{i["name"]}","{i["pinyin"]}","{i["id"]}",0)'
         else:
             pinyin = p.get_pinyin(i["name"], "")
-            sql = f'insert into City (name,pinyin,code,is_city) value ("{i["name"]}","{pinyin}","{i["id"]},0")'
+            sql = f'insert into City (name,pinyin,code,is_city) value ("{i["name"]}","{pinyin}","{i["id"]}",0)'
         try:
             cursor.execute(sql)
             mysql_conn.commit()
