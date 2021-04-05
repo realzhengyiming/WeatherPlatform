@@ -1,4 +1,9 @@
+import sys
+
 from xpinyin import Pinyin
+
+sys.path.append("改成你的路径")
+
 
 from init_db.city_lists import CITY_LIST
 from init_db.mysql_coon import mysql_conn
