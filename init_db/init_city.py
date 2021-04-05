@@ -1,9 +1,10 @@
 import sys
+import os
 
 from xpinyin import Pinyin
 
-sys.path.append("改成你的路径")
-
+base_dir = '/root/new_tmp_job/WeatherPlatform'
+sys.path.append(base_dir)
 
 from init_db.city_lists import CITY_LIST
 from init_db.mysql_coon import mysql_conn
@@ -12,7 +13,7 @@ from init_db.new_city_code import city_and_code
 
 def get_city_and_city_pinyin():
     city_list = []
-    with open("city_pinyin_list.txt", "r", encoding="gbk") as file:
+    with open(os.path.join(base_dir, 'init_db', "city_pinyin_list.txt"), "r", encoding="gbk") as file:
         for line in file.readlines():
             city, pinyin = line.split(" ")
             pinyin = pinyin.lower().rstrip()
