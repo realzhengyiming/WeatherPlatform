@@ -15,7 +15,7 @@ from django.db import connection
 from django.db.models import Count  # 直接使用models中的统计类来进行统计查询操作
 from django.http import HttpResponse
 from pyecharts import options as opts
-from pyecharts.charts import Bar, Pie, Line, Geo
+from pyecharts.charts import Bar, Pie, Line, Geo, Map
 # from pyecharts.globals import ThemeType
 from pyecharts.globals import ThemeType, ChartType
 from rest_framework.views import APIView
@@ -289,7 +289,7 @@ class drawMap(APIView):  # 要加apiview # 美团房源数量热力图
         result = cache.get('weather_city', None)  # 使用缓存，可以共享真好。
         if result is None:  # 如果无，则向数据库查询数据
             print("读取缓存中的城市")
-            result = fetchall_sql(
+            result = fetchall_sql(  # 这个sql也是有问题的。
                 """select direct_city_name,count(direct_city_name) as count from 
                  (SELECT distinct(id),direct_city_name FROM  City where is_city=1) result group by direct_city_name;""")
             cache.set('weather_city', result, 3600 * 12)  # 设置缓存
@@ -302,7 +302,9 @@ class drawMap(APIView):  # 要加apiview # 美团房源数量热力图
                 .add(
                 "城市",
                 [z for z in zip([i[0] for i in result], [i[1] for i in result])],
-                type_=ChartType.SCATTER,  # 修改图的类型
+                # type_=ChartType.SCATTER,  # 修改图的类型
+                type_=ChartType.EFFECT_SCATTER,
+
             )
                 .set_series_opts(label_opts=opts.LabelOpts(is_show=False))
                 .set_global_opts(
@@ -311,6 +313,18 @@ class drawMap(APIView):  # 要加apiview # 美团房源数量热力图
             )
                 .dump_options_with_quotes()
         )
+
+        c = (Map()
+             .add("商家A",
+                  [z for z in zip([i[0] for i in result], [i[1] for i in result])],
+
+                  "广东")
+             .set_global_opts(
+            title_opts=opts.TitleOpts(title="中国地图"), visualmap_opts=opts.VisualMapOpts()
+        )
+             .dump_options_with_quotes()
+
+             )
 
         return JsonResponse(json.loads(c))  # f安徽这个
 
