@@ -74,23 +74,23 @@
   <div class="doc-intro mdui-typo">
 
 
-<form>
-    <select id="select_city" class="mdui-select">
-  <option value="茂名" selected>茂名</option>
+<form action="{% url 'weather_show_app:host' %}" id="choice_city">
+
+
+<select id="select_city" class="mdui-select" form="choice_city">
+  <option  value="茂名" selected>茂名</option>
         {% for city in all_citys %}
-  <option value="{{city.id}}">{{city.direct_city_name}}</option>
+  <option id="city_{{city.id}}" value="{{city.id}}">{{city.direct_city_name}}</option>
         {% endfor %}
 </select>
-    <script>
-        $('#select_city').change(function(){
-   var text = $('#prov').val();
-   alert(text)
-});
-    </script>
 
-
-
+<input type="submit">
 </form>
+
+
+
+
+
 
 
    <div id="get_hostDraw_chart-hide">
@@ -98,6 +98,14 @@
     </div>
 <div class="mdui-center" id="get_hostDraw" style="width:800px; height:400px;margin-top: 50px;"></div>
     <script>
+
+//        $('#select_city').change(function(){
+//            var city_id = $('#select_city option:selected').val();
+//            now_city_id = city_id;
+//            //依次启动这几个图表
+//         });
+
+
         var get_hostDraw_chart = echarts.init(document.getElementById('get_hostDraw'), 'black', {renderer: 'canvas'});
         $(
             function (){
@@ -109,7 +117,7 @@
         function fetchget_hostDrawData() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'weather_show_app:get_today_aqi_line' %}",
+                url: "{% url 'weather_show_app:get_today_aqi_line' %}?city_id={{city_id}}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -155,7 +163,7 @@
         function fetchData_timeline() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'weather_show_app:get_hostReplay' %}",
+                url: "{% url 'weather_show_app:get_hostReplay' %}?city_id=?city_id={{city_id}}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -193,7 +201,7 @@
         function fetchData_drawmap() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'weather_show_app:today_temperature_line' %}",
+                url: "{% url 'weather_show_app:today_temperature_line' %}?city_id={{city_id}}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,   //15秒

@@ -276,9 +276,10 @@ JsonError = json_error
 @login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
 def hostPage(request):
     all_citys = City.objects.filter(is_city=True)
+    city_id = request.POST.get("city_id", 174)
 
     return render(request, 'weather_show_app/index_chartspage_today_detail.html',
-                  context={"app_name": "指定城市当天天气情况", 'all_citys': all_citys})
+                  context={"app_name": "指定城市当天天气情况", 'all_citys': all_citys, "city_id": city_id})
 
 
 @login_required(login_url='/weather_show_app/loginpage/')  # 默认主页

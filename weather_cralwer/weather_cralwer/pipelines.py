@@ -10,9 +10,13 @@ class DateWeatherPipeline:
         hour = item['hour']
 
         try:
-            hour_weather = HourWeather.objects.get(hour=hour, belong_to_date=belong_to_date)
-            if not hour_weather:
-                hour_weather.save(commit=True)
+            hour_weather = HourWeather.objects.filter(hour=hour, belong_to_date=belong_to_date)
+            print("这个是啥")
+            print(hour_weather)
+            if len(hour_weather) == 0:
+                item.save(commit=True)
+                # hour_weather = hour_weather[0]
+                # hour_weather.save(commit=True)
             else:
                 spider.logger.info("已经存在了，就不在插入")
         except Exception as e:
@@ -47,6 +51,8 @@ class DateWeatherPipeline:
                 city = city_list[0]
                 item["city"] = city
 
+            city_id = city.id
+
             try:
                 item.save(commit=True)  # 保存后就有id了吗
             except django.db.utils.IntegrityError:
@@ -55,7 +61,7 @@ class DateWeatherPipeline:
 
             if "extend_detail" in item.keys() and not not item['extend_detail']:  # 如果有细节，把24小时细节补上
                 today_24hours_weather_list = item['extend_detail']
-                today_weather_object_list = DateWeather.objects.filter(date=date)
+                today_weather_object_list = DateWeather.objects.filter(date=date, city_id=city_id)
                 if not today_weather_object_list:
                     spider.logger.info(f"{city} {date} 的天气找不到！")
                     return item

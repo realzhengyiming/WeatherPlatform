@@ -659,10 +659,10 @@ class get_today_aqi_bar(APIView):  # 按月份分，或者按年分
     def get(self, request, *args, **kwargs):
         city_id = request.GET.get("city_id")
         today_date = datetime.date.today()
-        #    这儿插入一句调用爬虫的
-        today_date = "2021-03-30"  # todo 查询如果没有数据就用这个
+
         if not city_id:
             city_id = City.objects.get(name="茂名").id
+
         print(f"当前的城市id是id 是 {city_id}")
         temp_df = cache.get('host_result', None)  # 使用缓存，可以共享真好。
         if temp_df is None:  # 如果无，则向数据库查询数据
