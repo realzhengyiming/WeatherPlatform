@@ -19,9 +19,10 @@ from pyecharts.charts import Bar, Pie, Line, Geo, Map
 # from pyecharts.globals import ThemeType
 from pyecharts.globals import ThemeType, ChartType
 from rest_framework.views import APIView
+from scrapy import cmdline
 from sklearn.model_selection import train_test_split
 
-from .models import DateWeather
+from .models import DateWeather, City
 
 
 def fetchall_sql(sql) -> dict:  # 这儿唯一有一个就是显示页面的
@@ -653,41 +654,51 @@ class get_postTimeLine(APIView):  # 按月份分，或者按年分
         return JsonResponse(json.loads(c))
 
 
-class get_hostDraw(APIView):  # 按月份分，或者按年分
-    # @cache_response(timeout=60 * 60*3, cache='default')
+# 这几个是可以使用url切换参数的
+class get_today_aqi_bar(APIView):  # 按月份分，或者按年分
     def get(self, request, *args, **kwargs):
-        # timeFreq = request.GET.get("timeFreq")
-        # print(timeFreq)
+        city_id = request.GET.get("city_id")
+        today_date = datetime.date.today()
+        #    这儿插入一句调用爬虫的
+        today_date = "2021-03-30"  # todo 查询如果没有数据就用这个
+        if not city_id:
+            city_id = City.objects.get(name="茂名").id
+        print(f"当前的城市id是id 是 {city_id}")
         temp_df = cache.get('host_result', None)  # 使用缓存，可以共享真好。
         if temp_df is None:  # 如果无，则向数据库查询数据
-            print("host,重新查询")
+            print("host,重新查询")  # todo 重新启动爬虫重新抓取这个功能有问题，需要思考一下解决的方法。
             result = fetchall_sql_dict(
-                '''SELECT distinct host_id,host_name,host_RoomNum,host_replayRate,host_commentNum FROM `hotelapp_host` order by host_RoomNum DESC''')
+                f'''select * from HourWeather where weather_id = (
+                select id from DateWeather where city_id=(
+                select id from City where id='{city_id}') 
+                and date='{today_date}') 
+                and belong_to_date ='{today_date}' order by hour ;
+                ''')
             temp_df = pd.DataFrame(result)
             # 都使用df来进行处理和显示
-            # temp_df.index = pd.to_datetime(temp_df.house_firstOnSale)
+            print(temp_df.head(24))
             cache.set('host_result', temp_df, 3600 * 12)  # 设置缓存
         else:
             pass
+        hour_list = ['0点', "1点", "2点", "3点", "4点", '5点', '6点', '7点', '8点', '9点', '10点', '11点', '12点',
+                     '13点', '14点', '15点', '16点', '17点', '18点', '19点', '20点', '21点', '22点', '23点']
         c = (
             Bar()
-                .add_xaxis(list(temp_df.host_name.values)[:10])
-                .add_yaxis("房东昵称", [int(i) for i in list(temp_df.host_RoomNum.values)[:10]])
+                .add_xaxis(hour_list)
+                .add_yaxis("AQI", [int(i) for i in list(temp_df.AQI.values)])
                 # .add_yaxis("商家B", [randrange(0, 100) for _ in range(6)])
 
-                .set_global_opts(title_opts=opts.TitleOpts(title="房源数量Top10的房东", subtitle="如图"),
+                .set_global_opts(title_opts=opts.TitleOpts(title="24小时空气质量"),
                                  datazoom_opts=opts.DataZoomOpts(),
                                  xaxis_opts=opts.AxisOpts(axislabel_opts=opts.LabelOpts(rotate=-90)),
                                  )
-                # .set_global_opts(datazoom_opts={ 'orient': "horizontal", 'range_start': 1, 'range_end': 8,
-                #                                 'type_': "inside"})
-                # title_opts=opts.TitleOpts(title="Bar-DataZoom（slider-水平）"),
+
+                .set_global_opts(datazoom_opts={ 'orient': "horizontal", 'range_start': 1, 'range_end': 8,
+                                                'type_': "inside"})
                 .dump_options_with_quotes()
         )
         return JsonResponse(json.loads(c))
 
-
-######  房东图表
 
 # 最常在线回复的前100房东
 class get_hostReplay(APIView):
@@ -766,7 +777,7 @@ class _price(APIView):
         return JsonResponse(json.loads(c))
 
 
-class history_weather_line(APIView):  # 不同城市中的房东数量  # todo 改成当天天气数据变化曲线图，api如何传递参数
+class today_temperature_detail_line(APIView):  # 不同城市中的房东数量  # todo 改成当天天气数据变化曲线图，api如何传递参数
     def get(self, request, *args, **kwargs):
         from pyecharts import options as opts
 

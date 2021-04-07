@@ -17,6 +17,7 @@ from simpleui import admin
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+PROJECT_BASE_DIR = BASE_DIR.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 

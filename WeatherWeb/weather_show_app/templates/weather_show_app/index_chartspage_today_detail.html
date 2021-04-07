@@ -74,15 +74,23 @@
   <div class="doc-intro mdui-typo">
 
 
-
-<select class="mdui-select">
-  <option value="茂名" selected></option>
-  <option value="2">State 2</option>
-  <option value="3">State 3</option>
-  <option value="4">State 4</option>
-  <option value="5">State 5</option>
-  <option value="6">State 6</option>
+<form>
+    <select id="select_city" class="mdui-select">
+  <option value="茂名" selected>茂名</option>
+        {% for city in all_citys %}
+  <option value="{{city.id}}">{{city.direct_city_name}}</option>
+        {% endfor %}
 </select>
+    <script>
+        $('#select_city').change(function(){
+   var text = $('#prov').val();
+   alert(text)
+});
+    </script>
+
+
+
+</form>
 
 
    <div id="get_hostDraw_chart-hide">
@@ -101,7 +109,7 @@
         function fetchget_hostDrawData() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'weather_show_app:get_hostDraw' %}",
+                url: "{% url 'weather_show_app:get_today_aqi_line' %}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -185,7 +193,7 @@
         function fetchData_drawmap() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'weather_show_app:diffcity_hostNum' %}",
+                url: "{% url 'weather_show_app:today_temperature_line' %}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,   //15秒

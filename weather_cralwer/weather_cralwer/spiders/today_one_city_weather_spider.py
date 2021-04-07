@@ -10,8 +10,8 @@ from weather_cralwer.weather_cralwer.db_util import mysql_conn_instance  # todo 
 from weather_cralwer.weather_cralwer.items import DateWeatherItem, HourWeatherItem
 
 
-class ChinaWeatherSpider(scrapy.Spider):
-    name = 'today_weather'
+class ChinaOneWeatherSpider(scrapy.Spider):
+    name = 'city_today_weather'
     allowed_domains = ['weather.com.cn']
 
     head_url = "http://www.weather.com.cn/weather1d/{city_code}.shtml"
@@ -29,10 +29,12 @@ class ChinaWeatherSpider(scrapy.Spider):
 
     }
 
-    def start_requests(self):
-        all_city_list = mysql_conn_instance.query("select * from City order by is_city desc;")
+    def __init__(self, city_id=None, *args, **kwargs):
+        super(ChinaOneWeatherSpider, self).__init__(*args, **kwargs)
+        self.city_id = city_id
 
-        # all_city_list = [{"name": "北京", "pinyin": "beijing", "code": '101010100'}]
+    def start_requests(self):
+        all_city_list = mysql_conn_instance.query(f"select * from city where id = {self.city_id};")
         for city_dict in all_city_list:
 
             if "pinyin" in city_dict:
