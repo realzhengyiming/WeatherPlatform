@@ -1,4 +1,5 @@
 import json
+import random
 import time
 
 from django.contrib.auth import authenticate, login, logout
@@ -13,7 +14,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+import pandas as pd
 from .forms import LoginForm, RegistrationForm
 from .models import City, DateWeather
 
@@ -86,15 +87,7 @@ def detaillist(request):  # 数据列表页分页
             temp_area.append(house.house_area)
             temp_price.append(house.house_oriprice)
 
-        import pandas as pd
-        # print(temp_city)
-        # print(temp_area)
-        # print(temp_price)
-        # print(pd.DataFrame(temp_city))
-        import random
         ran_li = random.sample(temp_city, 1)
-        # print("temo")
-        # print(ran_li)
         medianprice = int(pd.DataFrame(temp_price)[0].median())
         # print(medianprice)  # Q(house_oriprice_lt=medianprice)
         # 根据标签总数，来对比，
@@ -276,11 +269,14 @@ JsonError = json_error
 @login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
 def hostPage(request):
     all_citys = City.objects.filter(is_city=True)
-    print(request.GET)
     city_id = request.GET.get("city_id", 174)
+    now_city_name = City.objects.get(id=city_id)
     print(f"页面的city is {city_id}")
+    print(request.POST)
+    print(request.META)
     return render(request, 'weather_show_app/index_chartspage_today_detail.html',
-                  context={"app_name": "指定城市当天天气情况", 'all_citys': all_citys, "city_id": city_id})
+                  context={"app_name": "指定城市当天天气情况", 'all_citys': all_citys,
+                           "city_id": city_id,"now_city_name": now_city_name})
 
 
 @login_required(login_url='/weather_show_app/loginpage/')  # 默认主页

@@ -76,29 +76,6 @@ def json_error(error_string="error", code=500, **kwargs):
 JsonResponse = json_response
 JsonError = json_error
 
-
-# 这个是 登陆,不用这种，这种是高耦合
-# def login(request):
-#     if request.method == 'GET':
-#         print("get进来的")
-#         return HttpResponse("fuck you ")
-#     if request.method == 'POST':  # 当提交表单时
-#         print("post进来了")
-#         dic = {"flag":1}  # 这个是什么东西
-#         判断是否传参
-#         # if request.POST:
-#         #     password = request.POST.get('password')
-#         #     account = request.POST.get('account')
-#             判断参数中是否含有a和b
-#             # print(password)
-#             # print(account)
-#             # return HttpResponse(dic)
-#         else:
-#         # return HttpResponse('输入错误')
-#
-#     else:
-#         return HttpResponse('方法错误')
-
 ## 数据概略处的图
 # 最近7天爬虫数据爬取
 def bar_base() -> Bar:  # 返回给前端用来显示图的json设置,按城市分组来统计数量  # todo这个图我暂时不用了把
@@ -662,24 +639,18 @@ class get_today_aqi_bar(APIView):  # 按月份分，或者按年分
 
         if not city_id:
             city_id = City.objects.get(name="茂名").id
+        result = fetchall_sql_dict(
+            f'''select * from HourWeather where weather_id = (
+            select id from DateWeather where city_id=(
+            select id from City where id='{city_id}') 
+            and date='{today_date}') 
+            and belong_to_date ='{today_date}' order by hour ;
+            ''')
+        temp_df = pd.DataFrame(result)
+        # 都使用df来进行处理和显示
 
-        print(f"当前的城市id是id 是 {city_id}")
-        temp_df = cache.get('host_result', None)  # 使用缓存，可以共享真好。
-        if temp_df is None:  # 如果无，则向数据库查询数据
-            print("host,重新查询")  # todo 重新启动爬虫重新抓取这个功能有问题，需要思考一下解决的方法。
-            result = fetchall_sql_dict(
-                f'''select * from HourWeather where weather_id = (
-                select id from DateWeather where city_id=(
-                select id from City where id='{city_id}') 
-                and date='{today_date}') 
-                and belong_to_date ='{today_date}' order by hour ;
-                ''')
-            temp_df = pd.DataFrame(result)
-            # 都使用df来进行处理和显示
-            print(temp_df.head(24))
-            cache.set('host_result', temp_df, 3600 * 12)  # 设置缓存
-        else:
-            pass
+        print("显示数据AQI")
+        print(len(temp_df))
         hour_list = ['0点', "1点", "2点", "3点", "4点", '5点', '6点', '7点', '8点', '9点', '10点', '11点', '12点',
                      '13点', '14点', '15点', '16点', '17点', '18点', '19点', '20点', '21点', '22点', '23点']
         c = (
@@ -693,7 +664,7 @@ class get_today_aqi_bar(APIView):  # 按月份分，或者按年分
                                  xaxis_opts=opts.AxisOpts(axislabel_opts=opts.LabelOpts(rotate=-90)),
                                  )
 
-                .set_global_opts(datazoom_opts={ 'orient': "horizontal", 'range_start': 1, 'range_end': 8,
+                .set_global_opts(datazoom_opts={'orient': "horizontal", 'range_start': 1, 'range_end': 8,
                                                 'type_': "inside"})
                 .dump_options_with_quotes()
         )
@@ -713,13 +684,12 @@ class get_hostReplay(APIView):
                 '''SELECT distinct host_id,host_name,host_RoomNum,host_replayRate,host_commentNum FROM `hotelapp_host` order by host_RoomNum DESC''')
             temp_df = pd.DataFrame(result)
             # 都使用df来进行处理和显示
-            print(temp_df.head(5))
-            # temp_df.index = pd.to_datetime(temp_df.house_firstOnSale)
             cache.set('host_result', temp_df, 3600 * 12)  # 设置缓存
         else:
             pass
         from pyecharts.charts import Bar
         print("显示数据")
+        print(len(temp_df))
         temp_df = temp_df.sort_values(by=['host_replayRate', 'host_commentNum'], ascending=False)
         c = (
             Bar()
@@ -780,30 +750,17 @@ class _price(APIView):
 class today_temperature_detail_line(APIView):  # 不同城市中的房东数量  # todo 改成当天天气数据变化曲线图，api如何传递参数
     def get(self, request, *args, **kwargs):
         city_id = request.GET.get("city_id")
-
         if not city_id:
             city_id = City.objects.get(name="茂名").id
 
-        # 第一步： 写好sql，
-        # 第二部： 把返回的结果按要求组合起来。
+        result = fetchall_sql_dict(
+            f'''select * from HourWeather where weather_id = (
+            select id from DateWeather where city_id={city_id}
+            and date=curdate() ) 
+            and belong_to_date =curdate() order by hour ;
+            ''')  # 用line？  # 按24小时进行排序才可以
 
-        temp_df = cache.get('history_weather_line', None)  # 使用缓存，可以共享真好。
-        if temp_df is None:  # 如果无，则向数据库查询数据
-            print("today_weather_line,重新查询")
-
-            result = fetchall_sql_dict(
-                f'''select * from HourWeather where weather_id = (
-                select id from DateWeather where city_id={city_id}
-                and date=curdate() ) 
-                and belong_to_date =curdate() order by hour ;
-                ''')  # 用line？  # 按24小时进行排序才可以
-
-            # 都使用df来进行处理和显示
-            # temp_df.index = pd.to_datetime(temp_df.house_firstOnSale)
-            temp_df = pd.DataFrame(result)
-            print(temp_df.head(5))
-            cache.set('history_weather_line', temp_df, 3600 * 12)  # 设置缓存
-
+        temp_df = pd.DataFrame(result)
         week_name_list = ['0点', "1点", "2点", "3点", "4点", '5点', '6点', '7点', '8点', '9点', '10点', '11点', '12点',
                           '13点', '14点', '15点', '16点', '17点', '18点', '19点', '20点', '21点', '22点', '23点']
         high_temperature = [i for i in list(temp_df.temperature)]  # 改成按当天的 按 1～23 ，
@@ -1478,7 +1435,6 @@ class predictPrice(APIView):  # 绘制出了 matplotlibd的图
         temp_df['house_area'] = temp_df['house_area'].astype("float")
         # print(type(temp_df['house_oriprice']))
         # print(type(temp_df['house_area']))
-        print(temp_df.info())
         from matplotlib import pyplot as plt
 
         plt.rcParams['font.sans-serif'] = ['simhei']  # 解决中文显示问题-设置字体为黑体
