@@ -74,17 +74,16 @@
   <div class="doc-intro mdui-typo">
 
 
-<form action="{% url 'weather_show_app:host' %}" id="choice_city">
+<form action="{% url 'weather_show_app:host' %}" id="choice_city" method="GET">
 
 
-<select id="select_city" class="mdui-select" form="choice_city">
+<select id="select_city" class="mdui-select" >   # todo 提交表单这个东西可以
   <option  value="茂名" selected>茂名</option>
         {% for city in all_citys %}
   <option id="city_{{city.id}}" value="{{city.id}}">{{city.direct_city_name}}</option>
         {% endfor %}
 </select>
-
-<input type="submit">
+    <input type="submit">
 </form>
 
 

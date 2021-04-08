@@ -5,16 +5,15 @@ from weather_show_app.models import City, HourWeather  # 改成才可以，什�
 
 
 class DateWeatherPipeline:
-    def insert_hour_weather(self, spider, item):  # check hour weather exist
+    def insert_hour_weather(self, spider, item,weather):  # check hour weather exist
         belong_to_date = item['belong_to_date']
         hour = item['hour']
 
         try:
-            hour_weather = HourWeather.objects.filter(hour=hour, belong_to_date=belong_to_date)
-            print("这个是啥")
-            print(hour_weather)
-            if len(hour_weather) == 0:
+            hour_weather = HourWeather.objects.filter(Weather=weather ,hour=hour, belong_to_date=belong_to_date)
+            if len(hour_weather) == 0:  # todo 这儿还是有问题的好
                 item.save(commit=True)
+                print("保存成功这个")
                 # hour_weather = hour_weather[0]
                 # hour_weather.save(commit=True)
             else:
@@ -69,7 +68,7 @@ class DateWeatherPipeline:
                     today_weather = today_weather_object_list[0]
                     for hour_weather in today_24hours_weather_list:
                         hour_weather['Weather'] = today_weather
-                        self.insert_hour_weather(spider, hour_weather)
+                        self.insert_hour_weather(spider, hour_weather,today_weather)
 # if __name__ == '__main__':
 #     any = {"name": "zhengyiming", "gender": "man"}
 #     columns = ",".join([x for x in any.keys()])

@@ -779,7 +779,10 @@ class _price(APIView):
 
 class today_temperature_detail_line(APIView):  # 不同城市中的房东数量  # todo 改成当天天气数据变化曲线图，api如何传递参数
     def get(self, request, *args, **kwargs):
-        from pyecharts import options as opts
+        city_id = request.GET.get("city_id")
+
+        if not city_id:
+            city_id = City.objects.get(name="茂名").id
 
         # 第一步： 写好sql，
         # 第二部： 把返回的结果按要求组合起来。
@@ -789,11 +792,10 @@ class today_temperature_detail_line(APIView):  # 不同城市中的房东数量 
             print("today_weather_line,重新查询")
 
             result = fetchall_sql_dict(
-                '''select * from HourWeather where weather_id = (
-                select id from DateWeather where city_id=(
-                select id from City where name='北京') 
-                and date='2021-03-30') 
-                and belong_to_date ='2021-03-30' order by hour ;
+                f'''select * from HourWeather where weather_id = (
+                select id from DateWeather where city_id={city_id}
+                and date=curdate() ) 
+                and belong_to_date =curdate() order by hour ;
                 ''')  # 用line？  # 按24小时进行排序才可以
 
             # 都使用df来进行处理和显示
