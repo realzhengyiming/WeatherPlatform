@@ -13,11 +13,11 @@ class DateWeatherPipeline:
             hour_weather = HourWeather.objects.filter(Weather=weather ,hour=hour, belong_to_date=belong_to_date)
             if len(hour_weather) == 0:  # todo 这儿还是有问题的好
                 item.save(commit=True)
-                print("保存成功这个")
+                spider.logger.info(f"保存成功:{item}")
                 # hour_weather = hour_weather[0]
                 # hour_weather.save(commit=True)
             else:
-                spider.logger.info("已经存在了，就不在插入")
+                spider.logger.info(f"{hour_weather}已经存在")
         except Exception as e:
             spider.logger.info(e)
 

@@ -1,13 +1,9 @@
 import base64
 import datetime
-##### 后面开始pyechart绘图
 import json
-# from .Serializer import UserSerializer
 import time
 from io import BytesIO
 
-# from rest_framework.response import Response
-# from requests import Response
 import matplotlib.pyplot as plt
 import pandas as pd
 from django.core.cache import cache  # 导入缓存对象,redis存储
@@ -15,13 +11,11 @@ from django.db import connection
 from django.db.models import Count  # 直接使用models中的统计类来进行统计查询操作
 from django.http import HttpResponse
 from pyecharts import options as opts
-from pyecharts.charts import Bar, Pie, Line, Geo, Map
-# from pyecharts.globals import ThemeType
+from pyecharts.charts import Bar, Pie, Line, Geo, Map, Radar
 from pyecharts.globals import ThemeType, ChartType
 from rest_framework.views import APIView
-from scrapy import cmdline
 from sklearn.model_selection import train_test_split
-
+import numpy as np
 from .models import DateWeather, City
 
 
@@ -75,6 +69,7 @@ def json_error(error_string="error", code=500, **kwargs):
 
 JsonResponse = json_response
 JsonError = json_error
+
 
 ## 数据概略处的图
 # 最近7天爬虫数据爬取
@@ -648,16 +643,14 @@ class get_today_aqi_bar(APIView):  # 按月份分，或者按年分
             ''')
         temp_df = pd.DataFrame(result)
         # 都使用df来进行处理和显示
-
-        print("显示数据AQI")
-        print(len(temp_df))
+        temp_df = temp_df.replace(0, np.nan)
+        temp_df['AQI'].fillna((temp_df['AQI'].mean()), inplace=True)
         hour_list = ['0点', "1点", "2点", "3点", "4点", '5点', '6点', '7点', '8点', '9点', '10点', '11点', '12点',
                      '13点', '14点', '15点', '16点', '17点', '18点', '19点', '20点', '21点', '22点', '23点']
         c = (
             Bar()
                 .add_xaxis(hour_list)
                 .add_yaxis("AQI", [int(i) for i in list(temp_df.AQI.values)])
-                # .add_yaxis("商家B", [randrange(0, 100) for _ in range(6)])
 
                 .set_global_opts(title_opts=opts.TitleOpts(title="24小时空气质量"),
                                  datazoom_opts=opts.DataZoomOpts(),
@@ -672,40 +665,58 @@ class get_today_aqi_bar(APIView):  # 按月份分，或者按年分
 
 
 # 最常在线回复的前100房东
-class get_hostReplay(APIView):
+class wind_graph(APIView):
     # @cache_response(timeout=60 * 60*3, cache='default')
     def get(self, request, *args, **kwargs):
         # timeFreq = request.GET.get("timeFreq")
         # print(timeFreq)
-        temp_df = cache.get('host_result', None)  # 使用缓存，可以共享真好。
-        if temp_df is None:  # 如果无，则向数据库查询数据
-            print("host,重新查询")
-            result = fetchall_sql_dict(
-                '''SELECT distinct host_id,host_name,host_RoomNum,host_replayRate,host_commentNum FROM `hotelapp_host` order by host_RoomNum DESC''')
-            temp_df = pd.DataFrame(result)
-            # 都使用df来进行处理和显示
-            cache.set('host_result', temp_df, 3600 * 12)  # 设置缓存
-        else:
-            pass
-        from pyecharts.charts import Bar
-        print("显示数据")
-        print(len(temp_df))
-        temp_df = temp_df.sort_values(by=['host_replayRate', 'host_commentNum'], ascending=False)
-        c = (
-            Bar()
-                .add_xaxis(list(temp_df.host_name.values)[:10])
-                # .add_yaxis("房东回复率%", [int(i) for i in list(temp_df.host_replayRate.values)[:10]])  # 先取消
-                .add_yaxis("房东评论数", [int(i) for i in list(temp_df.host_commentNum.values)[:10]])
+        print("host,重新查询")
+        # result = fetchall_sql_dict(
+        #     '''SELECT distinct host_id,host_name,host_RoomNum,host_replayRate,host_commentNum FROM `hotelapp_host` order by host_RoomNum DESC''')
+        # temp_df = pd.DataFrame(result)
+        # 都使用df来进host行处理和显示
+        #
+        # print("显示数据")
+        # print(len(temp_df))
+        # temp_df = temp_df.sort_values(by=['host_replayRate', 'host_commentNum'], ascending=False)
+        v1 =[[4300, 10000, 28000, 35000, 50000, 19000]]
+        v2 =[[5000, 14000, 28000, 31000, 42000, 21000]]
 
-                .set_global_opts(title_opts=opts.TitleOpts(title="热情Top10的房东", subtitle="如图"),
-                                 datazoom_opts=opts.DataZoomOpts(),
-                                 xaxis_opts=opts.AxisOpts(axislabel_opts=opts.LabelOpts(rotate=-90)),
-                                 )
-                # .set_global_opts(datazoom_opts={ 'orient': "horizontal", 'range_start': 1, 'range_end': 8,
-                #                                 'type_': "inside"})
-                # title_opts=opts.TitleOpts(title="Bar-DataZoom（slider-水平）"),
-                .dump_options_with_quotes()
+        c = (
+        Radar(init_opts=opts.InitOpts(width="1280px", height="720px", bg_color="#CCCCCC"))
+        .add_schema(
+            schema=[
+                opts.RadarIndicatorItem(name="北风", max_=6500),
+                opts.RadarIndicatorItem(name="东北风", max_=16000),
+                opts.RadarIndicatorItem(name="东风", max_=30000),
+                opts.RadarIndicatorItem(name="东南风", max_=38000),
+                opts.RadarIndicatorItem(name="南风", max_=52000),
+                opts.RadarIndicatorItem(name="西南风", max_=25000),
+                opts.RadarIndicatorItem(name="西风", max_=25000),
+                opts.RadarIndicatorItem(name="西北风", max_=25000),
+            ],
+            splitarea_opt=opts.SplitAreaOpts(
+                is_show=True, areastyle_opts=opts.AreaStyleOpts(opacity=1)
+            ),
+            textstyle_opts=opts.TextStyleOpts(color="#fff"),
         )
+            .add(
+            series_name="预算分配（Allocated Budget）",
+            data=v1,
+            linestyle_opts=opts.LineStyleOpts(color="#CD0000"),
+        )
+            .add(
+            series_name="实际开销（Actual Spending）",
+            data=v2,
+            linestyle_opts=opts.LineStyleOpts(color="#5CACEE"),
+        )
+            .set_series_opts(label_opts=opts.LabelOpts(is_show=False))
+            .set_global_opts(
+            title_opts=opts.TitleOpts(title="基础雷达图"), legend_opts=opts.LegendOpts()
+        )
+            .dump_options_with_quotes()
+        )
+
         return JsonResponse(json.loads(c))
 
 
@@ -782,21 +793,6 @@ class today_temperature_detail_line(APIView):  # 不同城市中的房东数量 
                     data=[opts.MarkLineItem(type_="average", name="平均值")]
                 ),
             )
-                #     .add_yaxis(
-                #     series_name="最低气温",
-                #     # y_axis=low_temperature,
-                #     markpoint_opts=opts.MarkPointOpts(
-                #         data=[opts.MarkPointItem(value=-2, name="当天最低气温", x=1, y=-1.5)]
-                #     ),
-                #     markline_opts=opts.MarkLineOpts(
-                #         data=[
-                #             opts.MarkLineItem(type_="average", name="平均值"),
-                #             opts.MarkLineItem(symbol="none", x="90%", y="max"),
-                #             opts.MarkLineItem(symbol="circle", type_="max", name="最高点"),
-                #         ]
-                #     ),
-                # )
-
                 .set_global_opts(
                 title_opts=opts.TitleOpts(title="当天24小时温度情况", subtitle="每小时温度"),
                 tooltip_opts=opts.TooltipOpts(trigger="axis"),

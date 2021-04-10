@@ -32,7 +32,7 @@ urlpatterns = [  # todo 记得要删除这些坏东西/
 
     path("detail/", views.detailView, name="detail"),
     path("detaillist/", views.detaillist, name="detaillist"),
-    path("host/", views.hostPage, name="host"),
+    path("host/", views.today_weather_page, name="host"),
     path("consumer/", views.consumerPage, name="consumer"),
     path("time/", views.timePage, name="time"),
     path("price/", views.pricePage, name="price"),
@@ -63,7 +63,7 @@ urlpatterns = [  # todo 记得要删除这些坏东西/
     path("house_firstOnSale/", drawviews.get_twoLatestYear.as_view(), name="house_firstOnSale"),
     path("get_postTimeLine/", drawviews.get_postTimeLine.as_view(), name="get_postTimeLine"),
     path("get_today_aqi_line/", drawviews.get_today_aqi_bar.as_view(), name="get_today_aqi_line"),
-    path("get_hostReplay/", drawviews.get_hostReplay.as_view(), name="get_hostReplay"),
+    path("get_hostReplay/", drawviews.wind_graph.as_view(), name="get_hostReplay"),
     path("_price_bar/", drawviews._price_bar.as_view(), name="_price_bar"),  # 这个是画歌饼的
     path("_price_boxplot/", drawviews._price_boxplot.as_view(), name="_price_boxplot"),  # 这个是画box图的
     path("_price_heatmap/", drawviews._price_heatmap.as_view(), name="_price_heatmap"),

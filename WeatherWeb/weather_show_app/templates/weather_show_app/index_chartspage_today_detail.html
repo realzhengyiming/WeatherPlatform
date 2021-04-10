@@ -77,7 +77,7 @@
 <form action="{% url 'weather_show_app:host' %}" id="choice_city" method="GET">
 
 <select id="city_id" class="mdui-select" name="city_id" form="choice_city">   # todo 提交表单这个东西可以
-  <option  value="{{now_city_name}}" selected>{{now_city_name}}</option>
+  <option  value="{{now_city.id}}" selected>{{now_city.name}}</option>
         {% for city in all_citys %}
   <option id="city_{{city.id}}" value="{{city.id}}">{{city.direct_city_name}}</option>
         {% endfor %}
@@ -162,7 +162,7 @@
         function fetchData_timeline() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'weather_show_app:get_hostReplay' %}?city_id=?city_id={{city_id}}",
+                url: "{% url 'weather_show_app:get_hostReplay' %}?city_id={{city_id}}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,

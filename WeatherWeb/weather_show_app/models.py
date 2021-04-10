@@ -26,6 +26,8 @@ class DateWeather(models.Model):  # 天气概括表
     city = models.ForeignKey("City", related_name="City", on_delete=models.CASCADE)  # 这个是删除操作
     # extend_detail = models.TextField(blank=True)  # 这个是json的东西
 
+    def __str__(self):
+        return f"{self.date=};{self.city=}"
 
 class HourWeather(models.Model):  # h每小时的具体的天气情况
     class Meta:
@@ -43,6 +45,9 @@ class HourWeather(models.Model):  # h每小时的具体的天气情况
     relative_humidity = models.IntegerField()
     AQI = models.IntegerField(blank=True, default=0)  # 空气质量
 
+    def __str__(self):
+        return f"{self.hour=};{self.belong_to_date=};{self.Weather=}"
+
 
 class City(models.Model):
     class Meta:
@@ -58,7 +63,7 @@ class City(models.Model):
     # 对应中国天气网的url code http://www.weather.com.cn/weather/101080101.shtml
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.name=};{self.id=}"
 
 
 class Favourite(models.Model):  # 收藏夹
@@ -69,4 +74,4 @@ class Favourite(models.Model):  # 收藏夹
     city = models.ManyToManyField('City', related_name="fav_city")
 
     def __str__(self):
-        return str(self.city.name)
+        return f"{self.city=};{self.user=}"
