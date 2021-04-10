@@ -63,7 +63,7 @@ class City(models.Model):
     # 对应中国天气网的url code http://www.weather.com.cn/weather/101080101.shtml
 
     def __str__(self):
-        return f"{self.name=};{self.id=}"
+        return f"{self.name=};"
 
 
 class Favourite(models.Model):  # 收藏夹
