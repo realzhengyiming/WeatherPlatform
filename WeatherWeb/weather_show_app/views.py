@@ -1,3 +1,4 @@
+import datetime
 import json
 import random
 import time
@@ -268,15 +269,16 @@ JsonError = json_error
 
 @login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
 def today_weather_page(request):
-    all_citys = City.objects.filter(is_city=True)
     city_id = request.GET.get("city_id", 174)
+    now_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    all_citys = City.objects.filter(is_city=True)
     now_city = City.objects.get(id=city_id)
-    print(f"页面的city is {city_id}")
-    print(request.POST)
-    print(request.META)
+    today_weather = DateWeather.objects.get(city_id=now_city.id, date=now_date)
+
     return render(request, 'weather_show_app/index_chartspage_today_detail.html',
                   context={"app_name": "指定城市当天天气情况", 'all_citys': all_citys,
-                           "city_id": city_id,"now_city": now_city})
+                           "city_id": city_id, "now_city": now_city, "today_weather": today_weather})
 
 
 @login_required(login_url='/weather_show_app/loginpage/')  # 默认主页

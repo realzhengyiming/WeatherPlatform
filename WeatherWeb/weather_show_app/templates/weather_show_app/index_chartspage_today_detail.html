@@ -73,6 +73,7 @@
   <h1 class="doc-title mdui-text-color-theme">{{ app_name }}</h1>
   <div class="doc-intro mdui-typo">
 
+{{today_weather.dressing_index}}-{{today_weather.dressing_index_desc}}
 
 <form action="{% url 'weather_show_app:host' %}" id="choice_city" method="GET">
 
@@ -85,11 +86,6 @@
 
     <input type="submit">
 </form>
-
-
-
-
-
 
 
    <div id="get_hostDraw_chart-hide">
