@@ -1,6 +1,5 @@
 # 写一个简单的定时任务，让爬虫自动启动吧
-
-from scrapy.cmdline import execute
+from os import system
 import schedule
 import time
 import datetime
@@ -9,7 +8,8 @@ import datetime
 def spider_schedule_job():
     # 启动爬虫呢
     print(f"爬虫已启动，启动时间{datetime.datetime.now()}")
-    execute("scrapy crawl today_weather".split())
+    # execute("scrapy crawl today_weather".split())  # 这样好像是不行的
+    system("scrapy crawl today_weather")
 
 
 if __name__ == '__main__':
