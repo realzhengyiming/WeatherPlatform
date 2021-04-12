@@ -11,11 +11,12 @@ from weather_cralwer.weather_cralwer.items import DateWeatherItem, HourWeatherIt
 
 
 class ChinaOneWeatherSpider(scrapy.Spider):
-    name = 'city_today_weather'
-    allowed_domains = ['weather.com.cn']
+    name = 'baidu'
+    allowed_domains = ['*']
 
-    head_url = "http://www.weather.com.cn/weather1d/{city_code}.shtml"
-
+    start_urls = [
+        "http://weathernew.pae.baidu.com/weathernew/pc?query=%E6%83%A0%E5%B7%9E%E5%A4%A9%E6%B0%94&srcid=4982&city_name=%E6%B7%B1%E5%9C%B3&province_name=%E5%B9%BF%E4%B8%9C"
+]
     custom_settings = {
 
         'DOWNLOADER_MIDDLEWARES': {
@@ -32,22 +33,6 @@ class ChinaOneWeatherSpider(scrapy.Spider):
     def __init__(self, city_id=None, *args, **kwargs):
         super(ChinaOneWeatherSpider, self).__init__(*args, **kwargs)
         self.city_id = city_id
-
-    def start_requests(self):
-        all_city_list = mysql_conn_instance.query(f"select * from city where id = {self.city_id};")
-        for city_dict in all_city_list:
-
-            if "pinyin" in city_dict:
-                city_code = city_dict['code']
-                city_name = city_dict['name']
-                city_pinyin = city_dict['pinyin']
-                url = "http://www.weather.com.cn/weather1d/{city_code}.shtml".format(city_code=city_code)
-                yield scrapy.Request(url=url, callback=self.parse,
-                                     meta={"city_name": city_name,
-                                           "city_pinyin": city_pinyin,
-                                           "city_code": city_code})
-            else:
-                self.logger.info("非国内的跳过")
 
     def parse_24hour_data(self, script_string: str):
         script_string = script_string[script_string.index('=') + 1:-2]  # 移除改var data=将其变为json数据
@@ -104,31 +89,9 @@ class ChinaOneWeatherSpider(scrapy.Spider):
         return week_date_weather_list
 
     def parse(self, response):
+        # print(response.text)
         """处理得到有用信息保存数据文件"""
-        all_script_text = response.xpath("//script/text()").getall()  # hour3data;  observe24h_data
-        dressing_index = response.xpath('//*[@id="chuanyi"]/a/span/text()').extract_first()
-        dressing_index_desc = response.xpath('//*[@id="chuanyi"]/a/p/text()').extract_first()  # 穿衣指数描述
+        status = response.xpath('//div[@class="zhishu-box"]//text()').get_all()  # hour3data;  observe24h_data
+        print("----------")
+        print(status)
 
-        observe24h, hour3data = None, None
-        for one in all_script_text:
-            if one.find("var observe24h_data") != -1:
-                observe24h = one  # 24小时天气数据
-            elif one.find("var hour3data") != -1:
-                hour3data = one  # 这个是7天天气概括数据
-
-        today_24hours_weather = self.parse_24hour_data(observe24h)
-        # 下面爬取7天的数据
-        # hour3data
-
-        city_name = response.meta.get("city_name")
-        seven_days_weather_list = self.parse_7days_data(hour3data, city_name)
-        today_weather = seven_days_weather_list[0]
-        # 只能获得当天的穿衣指数，其他天得其他时候进行抓取。
-        today_weather['dressing_index'] = '' if not dressing_index else dressing_index  # 穿衣指数
-        today_weather['dressing_index_desc'] = "" if not dressing_index_desc else dressing_index_desc
-
-        today_weather['extend_detail'] = today_24hours_weather
-
-        # return today_weather_data, week_weather_data
-        for day_weather_item in seven_days_weather_list:
-            yield day_weather_item

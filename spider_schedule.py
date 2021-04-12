@@ -13,8 +13,9 @@ def spider_schedule_job():
 
 
 if __name__ == '__main__':
-    SCHEDULE_TIME = "00:01"
+    SCHEDULE_TIME = "00:10"
     schedule.every().day.at(SCHEDULE_TIME).do(spider_schedule_job)
+    print(f"开始执行，现在时间是 {datetime.datetime.now()}")
     while True:
         schedule.run_pending()
         time.sleep(1)

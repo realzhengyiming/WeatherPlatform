@@ -764,6 +764,7 @@ class today_temperature_detail_line(APIView):  # 不同城市中的房东数量 
         if not city_id:
             city_id = City.objects.get(name="茂名").id
 
+        print(f"温度获得的城市id {city_id}")
         result = fetchall_sql_dict(
             f'''select * from HourWeather where weather_id = (
             select id from DateWeather where city_id={city_id}
