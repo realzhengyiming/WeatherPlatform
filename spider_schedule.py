@@ -9,7 +9,12 @@ def spider_schedule_job():
     # 启动爬虫呢
     print(f"爬虫已启动，启动时间{datetime.datetime.now()}")
     # execute("scrapy crawl today_weather".split())  # 这样好像是不行的
-    system("scrapy crawl today_weather")
+    cmdline = '''
+    cd /root/new_tmp_job/WeatherPlatform &&
+    conda activate weather &&
+    scrapy crawl today_weather
+    '''
+    system(cmdline)
 
 
 if __name__ == '__main__':
