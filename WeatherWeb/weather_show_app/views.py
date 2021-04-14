@@ -266,7 +266,7 @@ JsonResponse = json_response
 JsonError = json_error
 
 
-@login_required(login_url='/loginpage/')  # 默认主页
+# @login_required(login_url='/loginpage/')  # 默认主页
 def today_weather_page(request):
     city_id = request.GET.get("city_id", 174)
     now_date = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -338,10 +338,10 @@ def genFavtag(city_object: City, date_weather: DateWeather):  # 输入一个fav�
             <td>{city_object.name}</td>
             <td>{date_weather.state}</td>
             <td>{date_weather.min_temperature}-{date_weather.max_temperature}</td>
-            <td><a target="_blank" href="/weather_show_app/host/?city_id={city_object.id}">{city_object.name}详情</a></td>
+            <td><a target="_blank" href="/host/?city_id={city_object.id}">{city_object.name}详情</a></td>
               <td>
-                  <button  onclick="delete_btn({city_object.name})"  # todo
-                        id="{city_object.name}"  name="del_button"
+                  <button  onclick="delete_btn"  # todo
+                        id="{city_object.id}"  name="del_button"
                           class="mdui-color-theme-accent mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white">
                   <i class="mdui-icon material-icons">delete_forever</i></button></td>
           </tr>'''
@@ -354,14 +354,17 @@ class favouriteHandler(APIView):  # 使用不同的试图来进行封装
         # print("get 进来了")
         method = self.request.query_params.get('method', None)
         if method is not None:
-            username = self.request.query_params.get("username", 0)
+            username = self.request.query_params.get("username", None)
+            if not username:
+                return json_response({"result": "请您先登录呢😯", 'tag': ""})
             city_id = self.request.query_params.get("city_id", 0)
             if method == "add":
                 if username != 0 and city_id != 0:
                     import traceback
                     user = User.objects.filter(username=username).first()  #
                     city = City.objects.filter(id=city_id).first()  # 找到这个房子
-                    date_weather = DateWeather.objects.filter(city_id=city.id, date=datetime.datetime.now().date())
+                    date_weather = DateWeather.objects.filter(city_id=city.id,
+                                                              date=datetime.datetime.now().date()).first()
                     if user is not None and city is not None:
                         try:
                             f1 = Favourite.objects.get(user=user)  # 找到一个收藏夹对象
@@ -371,7 +374,7 @@ class favouriteHandler(APIView):  # 使用不同的试图来进行封装
                                     return json_response({"result": "已在收藏夹 √   😀", 'tag': ""})
                             f1.city.add(city)
                             f1.save()  # 增加收藏
-                            return json_response({"result": "加入收藏 √   👌", 'tag': genFavtag(city,date_weather)})
+                            return json_response({"result": "加入收藏 √   👌", 'tag': genFavtag(city, date_weather)})
                         except Favourite.DoesNotExist:  # 创建
                             # 没有收藏时候
                             print(traceback.print_exc())
@@ -379,7 +382,7 @@ class favouriteHandler(APIView):  # 使用不同的试图来进行封装
                                 f1 = Favourite.objects.create(user=user)
                                 f1.city.add(city)
                                 f1.save()
-                                return json_response({"result": "加入收藏 √   👌", 'tag': genFavtag(city,date_weather)})
+                                return json_response({"result": "加入收藏 √   👌", 'tag': genFavtag(city, date_weather)})
                             except Exception as e:
                                 print(e)
                                 print(traceback.print_exc())

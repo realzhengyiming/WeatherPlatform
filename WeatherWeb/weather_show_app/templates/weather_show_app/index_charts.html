@@ -130,7 +130,7 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
                 {% if request.user.favourite.city.all %}
                  {% for i in request.user.favourite.city.all %}
                   <tr id='tr-{{i.id}}'>
-                    <td>{{i.id}}</td>
+                    <td>{{i.name}}</td>
                     <td>{{i.name}}
                     </td>
                     <td>
@@ -142,7 +142,7 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
                      {％endwith％}
 
                     </td>
-                      <td><a target="_blank" href="{% url 'weather_show_app:detail' %}?house_id={{i.house_id}}">{{i.house_title}}</a></td>
+                      <td><a target="_blank" href="{% url 'weather_show_app:host' %}?city_id={{i.id}}">{{i.name}}</a></td>
                       <td>
                           <button id="{{i.id}}"    name="del_button"
                                   class="mdui-btn mdui-btn-icon mdui-color-theme-accent mdui-ripple mdui-ripple-white">
@@ -487,14 +487,14 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
 // $(document).ready(function(){
   $("#add_mark").click(function() {
       // 按钮改成旋转的东西等待
-      var del_house_id = "{{ city_id }}";
+      var city_id = "{{ city_id }}";
       // alert(del_house_id);
-      if (del_house_id !== "") {
+      if (city_id !== "") {
         counter = 0
           $.ajax({
               type: "GET",
-              url: "{% url 'weather_show_app:Favourite' %}?username={% if user.is_authenticated %}{{ user.username }}{% endif %}&method=add&del_house_id=" +
-                  del_house_id.toString(),
+              url: "{% url 'weather_show_app:Favourite' %}?username={% if user.is_authenticated %}{{ user.username }}{% endif %}&method=add&city_id=" +
+                  city_id.toString(),
               dataType: 'json',
               // async: false,
               timeout:5000,  //超时自动重试

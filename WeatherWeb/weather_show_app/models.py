@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
-class DateWeather(models.Model):  # 天气概括表
+class DateWeather(models.Model):  # 天气概括表 todo 敲里吗，调试一点都不好用！！！！！！！我
     class Meta:
         db_table = 'DateWeather'
         unique_together = ("date", "city")
