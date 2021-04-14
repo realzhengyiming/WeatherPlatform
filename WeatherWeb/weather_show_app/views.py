@@ -13,11 +13,10 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
-from rest_framework.response import Response
 from rest_framework.views import APIView
 import pandas as pd
 from .forms import LoginForm, RegistrationForm
-from .models import City, DateWeather
+from .models import City, DateWeather, Favourite
 
 
 def index(request):
@@ -60,7 +59,7 @@ def testindex(request):  # 测试页
     return render(request, 'weather_show_app/test.html', context={"article": result})
 
 
-@login_required(login_url='/weather_show_app/loginpage/')  # 详情页
+@login_required(login_url='/loginpage/')  # 详情页
 def detaillist(request):  # 数据列表页分页
     # userObj = models.Asset.objects.filter(~Q(asset_id='')
     username = request.user.username
@@ -143,7 +142,7 @@ def fetchall_sql_dict(sql) -> [dict]:  # 这儿唯一有一个就是显示页面
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-# @login_required(login_url='/weather_show_app/loginpage/')  # 默认主页，主页不用登录，但是收藏夹需要登录
+# @login_required(login_url='/loginpage/')  # 默认主页，主页不用登录，但是收藏夹需要登录
 def index(request):  # 这儿唯一有一个就是显示页面的
     success_info = None
     if request.GET.get("success_info"):
@@ -225,7 +224,7 @@ def userLogout(request):  # 登出
     return redirect("/loginpage/")
 
 
-@login_required(login_url='/weather_show_app/loginpage/')  # 爬虫数据页
+@login_required(login_url='/loginpage/')  # 爬虫数据页
 def facilityPage(request):
     context = {
         'app_name': "房源设施分析"
@@ -267,7 +266,7 @@ JsonResponse = json_response
 JsonError = json_error
 
 
-@login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
+@login_required(login_url='/loginpage/')  # 默认主页
 def today_weather_page(request):
     city_id = request.GET.get("city_id", 174)
     now_date = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -281,70 +280,68 @@ def today_weather_page(request):
                            "city_id": city_id, "now_city": now_city, "today_weather": today_weather})
 
 
-@login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
+@login_required(login_url='/loginpage/')  # 默认主页
 def consumerPage(request):
     return render(request, 'weather_show_app/index_chartspage_consumer.html', context={"app_name": "房客专区"})
 
 
 # 详细的页面
-@login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
+@login_required(login_url='/loginpage/')  # 默认主页
 def timePage(request):
     return render(request, 'weather_show_app/index_chartspage_time.html', context={"app_name": "房源发布时间分析"})
 
 
 # 详细的页面
-@login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
+@login_required(login_url='/loginpage/')  # 默认主页
 def pricePage(request):
     return render(request, 'weather_show_app/index_chartspage_price.html', context={"app_name": "房源价格分析"})
 
 
 # 详细的页面
-@login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
+@login_required(login_url='/loginpage/')  # 默认主页
 def favcountPage(request):
     return render(request, 'weather_show_app/index_chartspage_price.html', context={"app_name": "热门房源分析"})
 
 
 # 搜索的页面
-@login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
+@login_required(login_url='/loginpage/')  # 默认主页
 def searchPage(request):
     return render(request, 'weather_show_app/index_chartspage_search.html', context={"app_name": "查找房源"})
 
 
 # 房源面积的页面
-@login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
+@login_required(login_url='/loginpage/')  # 默认主页
 def assessPage(request):
     return render(request, 'weather_show_app/index_chartspage_assess.html', context={"app_name": "房源价格评估"})
 
 
 # 房源面积的页面
-@login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
+@login_required(login_url='/loginpage/')  # 默认主页
 def area(request):
     return render(request, 'weather_show_app/index_chartspage_area.html', context={"app_name": "房源面积分析"})
 
 
 # 房源面积的页面
-@login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
+@login_required(login_url='/loginpage/')  # 默认主页
 def predictPage(request):
     return render(request, 'weather_show_app/index_chartspage_predict.html', context={"app_name": "房源价格预估"})
 
 
 # 详细的页面
-# @login_required(login_url='/weather_show_app/loginpage/')  # 默认主页
+# @login_required(login_url='/loginpage/')  # 默认主页
 def trainPage(request):
     return render(request, 'weather_show_app/test.html', context={"app_name": "test"})
 
 
-def genFavtag(favourite):  # 输入一个fav对象，生成一个house tag
-    i = favourite
-    # content = "content"
-    tag = f'''<tr id='tr-{i.house_id}'>
-            <td>{i.house_id}</td>
-            <td>{i.house_cityName}</td>
-            <td>{i.house_discountprice}</td>
-            <td><a target="_blank" href="/weather_show_app/detail/?house_id={i.house_id}">{i.house_title}</a></td>
+def genFavtag(city_object: City, date_weather: DateWeather):  # 输入一个fav对象，生成一个house tag  # todo 收藏夹功能
+    tag = f'''<tr id='tr-{city_object.id}'>
+            <td>{city_object.name}</td>
+            <td>{date_weather.state}</td>
+            <td>{date_weather.min_temperature}-{date_weather.max_temperature}</td>
+            <td><a target="_blank" href="/weather_show_app/host/?city_id={city_object.id}">{city_object.name}详情</a></td>
               <td>
-                  <button  onclick="delete_btn({i.house_id})"
-                        id="{i.house_id}"  name="del_button"
+                  <button  onclick="delete_btn({city_object.name})"  # todo
+                        id="{city_object.name}"  name="del_button"
                           class="mdui-color-theme-accent mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white">
                   <i class="mdui-icon material-icons">delete_forever</i></button></td>
           </tr>'''
@@ -358,63 +355,53 @@ class favouriteHandler(APIView):  # 使用不同的试图来进行封装
         method = self.request.query_params.get('method', None)
         if method is not None:
             username = self.request.query_params.get("username", 0)
-            house_id = self.request.query_params.get("del_house_id", 0)
+            city_id = self.request.query_params.get("city_id", 0)
             if method == "add":
-                if username != 0 and house_id != 0:
+                if username != 0 and city_id != 0:
                     import traceback
                     user = User.objects.filter(username=username).first()  #
-                    house = House.objects.filter(house_id=house_id).first()  # 找到这个房子
-                    # print(user)
-                    # print(house)
-                    if user is not None and house is not None:
+                    city = City.objects.filter(id=city_id).first()  # 找到这个房子
+                    date_weather = DateWeather.objects.filter(city_id=city.id, date=datetime.datetime.now().date())
+                    if user is not None and city is not None:
                         try:
                             f1 = Favourite.objects.get(user=user)  # 找到一个收藏夹对象
                             # 这儿可能重复
-                            # print(f1.fav_houses.all())
-                            for i in list(f1.fav_houses.all()):
-                                # print("输出里面的{}".format(i))
-                                if str(i.house_id) == house_id:
-                                    # print("已经有了")
+                            for i in list(f1.city.all()):
+                                if str(i.id) == city_id:
                                     return json_response({"result": "已在收藏夹 √   😀", 'tag': ""})
-                            f1.fav_houses.add(house)
+                            f1.city.add(city)
                             f1.save()  # 增加收藏
-                            # print("添加成功")
-                            return json_response({"result": "加入收藏 √   👌", 'tag': genFavtag(house)})
+                            return json_response({"result": "加入收藏 √   👌", 'tag': genFavtag(city,date_weather)})
                         except Favourite.DoesNotExist:  # 创建
                             # 没有收藏时候
                             print(traceback.print_exc())
-                            city = City.objects.filter(city_nm="广州").first()  # 默认广州
                             try:
-                                f1 = Favourite.objects.create(fav_city=city, user=user)
-                                f1.fav_houses.add(house)
+                                f1 = Favourite.objects.create(user=user)
+                                f1.city.add(city)
                                 f1.save()
-                                # print("加入收藏成功")
-                                return json_response({"result": "加入收藏 √   👌", 'tag': genFavtag(house)})
+                                return json_response({"result": "加入收藏 √   👌", 'tag': genFavtag(city,date_weather)})
                             except Exception as e:
                                 print(e)
                                 print(traceback.print_exc())
                                 print("请检查")
                         except Exception as e:
-                            # print("出现问题")
                             print(e)
                 return json_response({"result": "出现问题", 'tag': ""})
             if method == "del":
                 user = User.objects.filter(username=username).first()  #
-                house = House.objects.filter(house_id=house_id).first()  # 找到这个房子
-                if user is not None and house is not None:
+                city = City.objects.filter(id=city_id).first()  # 找到这个房子
+                if user is not None and city is not None:
                     try:
                         f1 = Favourite.objects.get(user=user)  # 找到一个收藏夹对象
-                        f1.fav_houses.remove(house)
+                        f1.city.remove(city)
                         f1.save()  # 增加收藏
-                        # print("删除成功")
                         return json_response({"result": "删除成功 √  👌"})
                     except Favourite.DoesNotExist:  # 创建
                         print("没有收藏夹")
                 else:
-                    return json_response({"result": "未找到此房子！！！"})
+                    return json_response({"result": "未找到此城市！！！"})
         else:
             return json_response({"result": "未找到参数"})
-            # return "None"
 
     def post(self, request, *args, **kwargs):
         return json_response({"result": "请通过get"})

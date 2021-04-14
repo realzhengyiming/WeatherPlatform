@@ -94,7 +94,7 @@
 <div class="mdui-center" id="get_hostDraw" style="width:800px; height:400px;margin-top: 50px;"></div>
     <script>
 
-//        $('#select_city').change(function(){
+        //        $('#select_city').change(function(){
 //            var city_id = $('#select_city option:selected').val();
 //            now_city_id = city_id;
 //            //依次启动这几个图表
@@ -110,6 +110,7 @@
         );
 
         function fetchget_hostDrawData() {
+            retry_counter = 0
             $.ajax({
                 type: "GET",
                 url: "{% url 'weather_show_app:get_today_aqi_line' %}?city_id={{city_id}}",
@@ -126,10 +127,16 @@
                 error : function(XMLHttpRequest,status) { //请求完成后最终执行参数
                     if (status === 'timeout') {
                         //超时,status还有success,error等值的情况
-                        $.ajax(this).abort();
+                        if (retry_counter > 3){
+                            return
+                        }else{
+                            $.ajax(this).abort();
                         console.log("超时,已重试");
                         $.ajax(this);
                         return
+                        }
+
+
                     }
                 }
 
@@ -169,10 +176,16 @@
                 error : function(XMLHttpRequest,status) { //请求完成后最终执行参数
                     if (status === 'timeout') {
                         //超时,status还有success,error等值的情况
-                        $.ajax(this).abort();
+                        if (retry_counter > 3){
+                            return
+                        }else{
+                            $.ajax(this).abort();
                         console.log("超时,已重试");
                         $.ajax(this);
                         return
+                        }
+
+
                     }
                 }
 
@@ -207,10 +220,16 @@
                 error : function(XMLHttpRequest,status) { //请求完成后最终执行参数
                     if (status === 'timeout') {
                         //超时,status还有success,error等值的情况
-                        $.ajax(this).abort();
+                        if (retry_counter > 3){
+                            return
+                        }else{
+                            $.ajax(this).abort();
                         console.log("超时,已重试");
                         $.ajax(this);
                         return
+                        }
+
+
                     }
                 }
 
@@ -227,6 +246,40 @@
 {% endblock %}
 
 {% block tail %}
+
+<!--加入喜欢-->
+
+<div class="mdui-fab-wrapper" mdui-fab="">
+      <button class="mdui-fab mdui-ripple mdui-color-theme-accent">
+        <i class="mdui-icon material-icons">add</i>
+        <i class="mdui-icon mdui-fab-opened material-icons">mode_edit</i>
+      </button>
+      <div class="mdui-fab-dial" style="height: 0px;">
+        <!--<button class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-pink" style="transition-delay: 0ms;">-->
+            <!--<i class="mdui-icon material-icons">backup</i></button>-->
+
+
+        <button id="add_mark" mdui-tooltip="{content: '加入收藏', position: 'left'}" class="mdui-fab mdui-fab-mini
+        mdui-ripple mdui-color-red" style="transition-delay: 15ms;">
+            <i class="mdui-icon material-icons">bookmark</i></button>
+        <!--<button id="del_mark" mdui-tooltip="{content: '从收藏中删除', position: 'left'}" class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-orange" style="transition-delay: 30ms;">-->
+            <!--<i class="mdui-icon material-icons">delete_forever</i></button>-->
+
+          <!--这个是啥-->
+          <!--<div >-->
+              <!--<div class="mdui-dialog-title">Are you sure?</div>-->
+              <!--<div class="mdui-dialog-content">You'll lose all photos and media!</div>-->
+              <!--<div class="mdui-dialog-actions">-->
+                <!--<button class="mdui-btn mdui-ripple">cancel</button>-->
+                <!--<button class="mdui-btn mdui-ripple">erase</button>-->
+              <!--</div>-->
+            <!--</div>-->
+        <!--<button class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-blue" style="transition-delay: 45ms;">-->
+            <!--<i class="mdui-icon material-icons">touch_app</i></button>-->
+      </div>
+    </div>
+
+
 
 
 {% endblock %}

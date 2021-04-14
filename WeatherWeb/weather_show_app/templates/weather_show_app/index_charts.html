@@ -48,7 +48,7 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
   <div class="mdui-toolbar mdui-color-theme">
     {% block drawer_icon %}
     {% endblock %}
-    <a href="/weather_show_app" class="mdui-typo-headline mdui-hidden-xs"
+    <a href="/" class="mdui-typo-headline mdui-hidden-xs"
        mdui-tooltip="{content: '回首页', position: 'bottom'}">
         <i class="mdui-icon material-icons">&#xe88a;</i></a>
 
@@ -67,7 +67,7 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
 
 
       {% if user.is_authenticated %}<a class="mdui-btn  mdui-ripple mdui-ripple-white"
-                                       mdui-tooltip="{content: '我的收藏夹'}"
+                                       mdui-tooltip="{content: '关注的城市'}"
                                        mdui-dialog="{target: '#example-4'}">{{ request.user|lower }}</a>
           <a href="{% url 'weather_show_app:password_change' %}" class="mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white"
              mdui-tooltip="{content: '修改密码'}">
@@ -107,9 +107,8 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
 <!--这个是弹出对话框的收藏夹-->
 <div class="mdui-dialog" id="example-4">
     <div class="mdui-dialog-content" >
-      <div class="mdui-dialog-title mdui-center">我的收藏夹 </div>
+      <div class="mdui-dialog-title mdui-center">已关注的天气</div>
         <!-- 选择城市  -->
-      <p>收藏夹中的房源会进行每日监控</p>
         <!--偏好城市:<select class="mdui-select" mdui-select style="margin-left: 10px;">-->
             <!--{% get_all_city  %}  这个好像没啥用-->
           <!--&lt;!&ndash;<option value="2">State 2</option>&ndash;&gt;-->
@@ -121,22 +120,31 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>房源城市</th>
-                    <th>房源价格</th>
-                    <th>房源名</th>
+                    <th>天气城市</th>
+                    <th>天气情况</th>
+                    <th>天气温度</th>
                       <th>删除</th>
                   </tr>
                 </thead>
                 <tbody id="add_apend">
-                {% if request.user.favourite.fav_houses.all %}
-                 {% for i in request.user.favourite.fav_houses.all %}
-                  <tr id='tr-{{i.house_id}}'>
-                    <td>{{i.house_id}}</td>
-                    <td>{{i.house_cityName}}</td>
-                    <td>{{i.house_discountprice}}</td>
+                {% if request.user.favourite.city.all %}
+                 {% for i in request.user.favourite.city.all %}
+                  <tr id='tr-{{i.id}}'>
+                    <td>{{i.id}}</td>
+                    <td>{{i.name}}
+                    </td>
+                    <td>
+                      {% for date_weather in i.date_weather_set.all  %}
+                        {{date_weather}}
+                      {% endfor %}
+                      {％ with i.DateWeather_set.last | last as last ％}
+                     {{last.key}}
+                     {％endwith％}
+
+                    </td>
                       <td><a target="_blank" href="{% url 'weather_show_app:detail' %}?house_id={{i.house_id}}">{{i.house_title}}</a></td>
                       <td>
-                          <button id="{{i.house_id}}"    name="del_button"
+                          <button id="{{i.id}}"    name="del_button"
                                   class="mdui-btn mdui-btn-icon mdui-color-theme-accent mdui-ripple mdui-ripple-white">
                           <i class="mdui-icon material-icons">delete_forever</i></button></td>
                   </tr>
@@ -145,7 +153,7 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
                 <tr id="delete">
                     <td></td>
                     <td></td>
-                    <td><p class="mdui-text-center" style="padding-top: 20px;"><h4>您的收藏夹为空，快去收藏吧☺</h4></p>
+                    <td><p class="mdui-text-center" style="padding-top: 20px;"><h4>你还未关注任何城市的天气☺</h4></p>
                         </td>
                     <td></td>
                     <td></td>
@@ -479,12 +487,13 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
 // $(document).ready(function(){
   $("#add_mark").click(function() {
       // 按钮改成旋转的东西等待
-      var del_house_id = "{{ house.0.house_id }}";
+      var del_house_id = "{{ city_id }}";
       // alert(del_house_id);
       if (del_house_id !== "") {
+        counter = 0
           $.ajax({
               type: "GET",
-              url: "{% url 'weather_show_app:Favourite' %}?username={{request.user.username}}&method=add&del_house_id=" +
+              url: "{% url 'weather_show_app:Favourite' %}?username={% if user.is_authenticated %}{{ user.username }}{% endif %}&method=add&del_house_id=" +
                   del_house_id.toString(),
               dataType: 'json',
               // async: false,
@@ -506,11 +515,17 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
               },
               error : function(XMLHttpRequest,status) { //请求完成后最终执行参数
                     if (status === 'timeout') {
-                        //超时,status还有success,error等值的情况
+                      if (counter > 3){
+                        return
+                      }else{
+                        counter +=1;
+                         //超时,status还有success,error等值的情况
                         $.ajax(this).abort();
                         console.log("超时,已重试");
                         $.ajax(this);
                         return
+                      }
+
                     }
                 }
 
@@ -527,15 +542,14 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
          });
   });
 
-     function delete_btn(house_id){  //动态添加的再动态绑定这个就可以
+     function delete_btn(city_id){  //动态添加的再动态绑定这个就可以
             // alert(house_id);
              $(this).attr("disabled",true);  //设置不可点击
-             var del_house_id=house_id;  //找到button
             //发送请求
             $.ajax({
                 type: "GET",
-                url: "{% url 'weather_show_app:Favourite' %}?username={{request.user.username}}&method=del&del_house_id="+
-                    del_house_id.toString(),
+                url: "{% url 'weather_show_app:Favourite' %}?username={{request.user.username}}&method=del&city_id="+
+                    city_id.toString(),
                 dataType: 'json',
                 // async: false,
                 timeout:5000,  //超时重试
@@ -544,7 +558,7 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
                     // var strJSON = result;//得到的JSON
                     var obj = eval(result);
 
-                    $("[id=tr-"+del_house_id.toString()+"]").remove();
+                    $("[id=tr-"+city_id.toString()+"]").remove();
 
                    mdui.snackbar({
                          message: ''+obj.data.result.toString(),
@@ -570,12 +584,12 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
 
         $("[name=del_button]").click(function(){
              $(this).attr("disabled",true);  //设置不可点击
-             var del_house_id=$(this).attr("id");  //找到button
+             var city_id=$(this).attr("id");  //找到button
             //发送请求
             $.ajax({
                 type: "GET",
-                url: "{% url 'weather_show_app:Favourite' %}?username={{request.user.username}}&method=del&del_house_id="+
-                    del_house_id.toString(),
+                url: "{% url 'weather_show_app:Favourite' %}?username={{request.user.username}}&method=del&city_id="+
+                    city_id.toString(),
                 dataType: 'json',
                 // async: false,
                 timeout:5000,
@@ -584,7 +598,7 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
                     // var strJSON = result;//得到的JSON
                     var obj = eval(result);
 
-                    $("[id=tr-"+del_house_id.toString()+"]").remove();
+                    $("[id=tr-"+city_id.toString()+"]").remove();
 
                    mdui.snackbar({
                          message: ''+obj.data.result.toString(),

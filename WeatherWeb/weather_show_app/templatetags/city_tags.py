@@ -14,9 +14,11 @@
 
 __author__ = 'zhengyimiing'
 
+import datetime
+
 from django import template
 
-from weather_show_app.models import City
+from weather_show_app.models import City,DateWeather
 
 register = template.Library()
 
