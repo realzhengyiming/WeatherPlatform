@@ -271,7 +271,9 @@ def today_weather_page(request):
     city_id = request.GET.get("city_id", 174)
     now_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
+
     all_citys = City.objects.filter(is_city=True)
+    one = all_citys.first()
     now_city = City.objects.get(id=city_id)
     today_weather = DateWeather.objects.get(city_id=now_city.id, date=now_date)
 
@@ -338,7 +340,7 @@ def genFavtag(city_object: City, date_weather: DateWeather):  # 输入一个fav�
             <td>{city_object.name}</td>
             <td>{date_weather.state}</td>
             <td>{date_weather.min_temperature}-{date_weather.max_temperature}</td>
-            <td><a target="_blank" href="/host/?city_id={city_object.id}">{city_object.name}详情</a></td>
+            <td><a target="_blank" href="/host/?city_id={city_object.id}">{city_object.name}</a></td>
               <td>
                   <button  onclick="delete_btn"  # todo
                         id="{city_object.id}"  name="del_button"

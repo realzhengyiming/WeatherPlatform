@@ -24,10 +24,12 @@ class DateWeather(models.Model):  # 天气概括表 todo 敲里吗，调试一�
     wind_direction = models.TextField(blank=True)  # 风向
 
     city = models.ForeignKey("City", related_name="City", on_delete=models.CASCADE)  # 这个是删除操作
+
     # extend_detail = models.TextField(blank=True)  # 这个是json的东西
 
     def __str__(self):
         return f"{self.date};{self.city}"
+
 
 class HourWeather(models.Model):  # h每小时的具体的天气情况
     class Meta:

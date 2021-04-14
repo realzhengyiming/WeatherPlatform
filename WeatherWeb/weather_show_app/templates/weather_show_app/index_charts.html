@@ -128,23 +128,23 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
                 </thead>
                 <tbody id="add_apend">
                 {% if request.user.favourite.city.all %}
-                 {% for i in request.user.favourite.city.all %}
-                  <tr id='tr-{{i.id}}'>
-                    <td>{{i.name}}</td>
-                    <td>{{i.name}}
+                 {% for city in request.user.favourite.city.all %}
+                  <tr id='tr-{{city.id}}'>
+                    <td>{{city.id}}</td>
+                    <td>{{city.name}}
                     </td>
                     <td>
-                      {% for date_weather in i.date_weather_set.all  %}
-                        {{date_weather}}
-                      {% endfor %}
-                      {％ with i.DateWeather_set.last | last as last ％}
-                     {{last.key}}
-                     {％endwith％}
+
+                      {{city.id |get_city_today_weather|get_state}}
+                    </td><td>
+                       {{city.id | get_city_today_weather|get_min_temperature }}℃~
+                     {{city.id | get_city_today_weather|get_max_temperature }}℃
+
 
                     </td>
-                      <td><a target="_blank" href="{% url 'weather_show_app:host' %}?city_id={{i.id}}">{{i.name}}</a></td>
+                      <td><a target="_blank" href="{% url 'weather_show_app:host' %}?city_id={{city.id}}">{{city.name}}</a></td>
                       <td>
-                          <button id="{{i.id}}"    name="del_button"
+                          <button id="{{city.id}}"    name="del_button"
                                   class="mdui-btn mdui-btn-icon mdui-color-theme-accent mdui-ripple mdui-ripple-white">
                           <i class="mdui-icon material-icons">delete_forever</i></button></td>
                   </tr>

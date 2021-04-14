@@ -34,7 +34,7 @@
         <i class="mdui-collapse-item-arrow mdui-icon material-icons">keyboard_arrow_down</i>
       </div>
       <div class="mdui-collapse-item-body mdui-list  mdui-collapse-item-open  ">
-           <a href="{% url 'weather_show_app:host' %}" class="mdui-list-item mdui-ripple mdui-list-item-active">房东数据分析</a>
+           <a href="{% url 'weather_show_app:host' %}" class="mdui-list-item mdui-ripple mdui-list-item-active">各城市当天天气分析</a>
           <!--<a href="{% url 'weather_show_app:consumer' %}" class="mdui-list-item mdui-ripple ">房客专区</a>-->
     <a href="{% url 'weather_show_app:price' %}" class="mdui-list-item mdui-ripple ">房源价格分析</a>
        <!--<a href="{% url 'weather_show_app:detaillist' %}" class="mdui-list-item mdui-ripple ">地理位置分析</a>-->
@@ -73,7 +73,9 @@
   <h1 class="doc-title mdui-text-color-theme">{{ app_name }}</h1>
   <div class="doc-intro mdui-typo">
 
-{{today_weather.dressing_index}}-{{today_weather.dressing_index_desc}}
+
+
+<!--{{today_weather.dressing_index}}-{{today_weather.dressing_index_desc}}-->
 
 <form action="{% url 'weather_show_app:host' %}" id="choice_city" method="GET">
 
@@ -86,13 +88,27 @@
 
     <input type="submit">
 </form>
-
+<br>
+            <div class="mdui-chip">
+  <span class="mdui-chip-title">天气情况：{{today_weather.state}}</span>
+</div>
+        <div class="mdui-chip">
+  <span class="mdui-chip-title">天气体感：{{today_weather.dressing_index}}</span>
+</div>
+        <div class="mdui-chip">
+  <span class="mdui-chip-title">穿衣指数：{{today_weather.dressing_index_describe}}</span>
+</div>
+       <div class="mdui-chip">
+  <span class="mdui-chip-title">出行推荐：{{today_weather.dressing_index_describe}}</span>
+</div>
 
    <div id="get_hostDraw_chart-hide">
     <div class="mdui-center mdui-spinner mdui-spinner-colorful" style="margin-top: 200px;"></div>
     </div>
 <div class="mdui-center" id="get_hostDraw" style="width:800px; height:400px;margin-top: 50px;"></div>
     <script>
+
+
 
         //        $('#select_city').change(function(){
 //            var city_id = $('#select_city option:selected').val();
