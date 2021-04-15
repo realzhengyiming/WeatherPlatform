@@ -337,13 +337,15 @@ def trainPage(request):
 
 def genFavtag(city_object: City, date_weather: DateWeather):  # 输入一个fav对象，生成一个house tag  # todo 收藏夹功能
     tag = f'''<tr id='tr-{city_object.id}'>
+                <td>{city_object.id}</td>
+
             <td>{city_object.name}</td>
             <td>{date_weather.state}</td>
-            <td>{date_weather.min_temperature}-{date_weather.max_temperature}</td>
+            <td>{date_weather.min_temperature}℃~~{date_weather.max_temperature}℃~</td>
             <td><a target="_blank" href="/host/?city_id={city_object.id}">{city_object.name}</a></td>
               <td>
-                  <button  onclick="delete_btn"  # todo
-                        id="{city_object.id}"  name="del_button"
+                  <button  onclick="delete_btn({city_object.id})"  
+                        id="{city_object.name}"  name="del_button"
                           class="mdui-color-theme-accent mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white">
                   <i class="mdui-icon material-icons">delete_forever</i></button></td>
           </tr>'''
