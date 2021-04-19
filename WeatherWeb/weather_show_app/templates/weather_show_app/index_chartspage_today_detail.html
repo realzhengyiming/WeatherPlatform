@@ -1,4 +1,6 @@
 {% extends 'weather_show_app/index_charts.html' %}
+    {% load city_tags %}
+
 {#多app的方案中template需要这样来引入，view中也是需要加上#}
 {% block title %}
 {{ app_name }}
@@ -88,19 +90,18 @@
 
     <input type="submit">
 </form>
-<br>
-            <div class="mdui-chip">
+<br><div class="mdui-chip">
   <span class="mdui-chip-title">天气情况：{{today_weather.state}}</span>
-</div>
+</div><br>
         <div class="mdui-chip">
-  <span class="mdui-chip-title">天气体感：{{today_weather.dressing_index}}</span>
-</div>
+  <span class="mdui-chip-title">天气体感：{{ today_weather.dressing_index}}</span>
+</div><br>
         <div class="mdui-chip">
-  <span class="mdui-chip-title">穿衣指数：{{today_weather.min_temperature |wear_clothing_guide}}</span>
-</div>
+  <span class="mdui-chip-title">穿衣指数：{{ today_weather.min_temperature | wear_clothing_guide }}</span>
+</div><br>
        <div class="mdui-chip">
-  <span class="mdui-chip-title">出行推荐：{{today_weather.dressing_index_describe|state_to_outdoor_guide}}</span>
-</div>
+  <span class="mdui-chip-title">出行推荐：{{ today_weather.state | state_to_outdoor_guide }}</span>
+</div><br>
 
    <div id="get_hostDraw_chart-hide">
     <div class="mdui-center mdui-spinner mdui-spinner-colorful" style="margin-top: 200px;"></div>
