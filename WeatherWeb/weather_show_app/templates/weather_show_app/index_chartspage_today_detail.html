@@ -96,10 +96,10 @@
   <span class="mdui-chip-title">天气体感：{{today_weather.dressing_index}}</span>
 </div>
         <div class="mdui-chip">
-  <span class="mdui-chip-title">穿衣指数：{{today_weather.dressing_index_describe}}</span>
+  <span class="mdui-chip-title">穿衣指数：{{today_weather.min_temperature |wear_clothing_guide}}</span>
 </div>
        <div class="mdui-chip">
-  <span class="mdui-chip-title">出行推荐：{{today_weather.dressing_index_describe}}</span>
+  <span class="mdui-chip-title">出行推荐：{{today_weather.dressing_index_describe|state_to_outdoor_guide}}</span>
 </div>
 
    <div id="get_hostDraw_chart-hide">

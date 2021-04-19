@@ -3,6 +3,7 @@ import json
 import random
 import time
 
+import pandas as pd
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -14,7 +15,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 from rest_framework.views import APIView
-import pandas as pd
+
 from .forms import LoginForm, RegistrationForm
 from .models import City, DateWeather, Favourite
 
@@ -271,9 +272,8 @@ def today_weather_page(request):
     city_id = request.GET.get("city_id", 174)
     now_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
-
     all_citys = City.objects.filter(is_city=True)
-    one = all_citys.first()
+    # one = all_citys.first()
     now_city = City.objects.get(id=city_id)
     today_weather = DateWeather.objects.get(city_id=now_city.id, date=now_date)
 
