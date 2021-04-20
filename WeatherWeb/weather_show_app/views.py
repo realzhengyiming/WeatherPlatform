@@ -271,15 +271,22 @@ JsonError = json_error
 def today_weather_page(request):
     city_id = request.GET.get("city_id", 174)
     now_date = datetime.datetime.now().strftime('%Y-%m-%d')
+    select_date = request.GET.get("select_date", now_date)
 
     all_citys = City.objects.filter(is_city=True)
-    # one = all_citys.first()
     now_city = City.objects.get(id=city_id)
-    today_weather = DateWeather.objects.get(city_id=now_city.id, date=now_date)
+    today_weather = DateWeather.objects.get(city_id=now_city.id, date=select_date)
+    future_date = (datetime.date.today() + datetime.timedelta(days=7)).strftime('%Y-%m-%d')
+    past_dates = (datetime.date.today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d')
+
+    future_weathers = DateWeather.objects.filter(date__range=(now_date, future_date), city_id=city_id)
+    past_weathers = DateWeather.objects.filter(date__range=(past_dates, now_date), city_id=city_id).order_by("-date")
+    past_weather_dates = [weather.date for weather in past_weathers]
 
     return render(request, 'weather_show_app/index_chartspage_today_detail.html',
-                  context={"app_name": "指定城市当天天气情况", 'all_citys': all_citys,
-                           "city_id": city_id, "now_city": now_city, "today_weather": today_weather})
+                  context={"app_name": "指定城市当天天气情况", 'all_citys': all_citys, "select_date": select_date,
+                           "city_id": city_id, "now_city": now_city, "today_weather": today_weather,
+                           "future_weathers": future_weathers, "past_dates": past_weather_dates})
 
 
 @login_required(login_url='/loginpage/')  # 默认主页

@@ -70,7 +70,7 @@ def state_to_outdoor_guide(state):
 # 穿衣指数
 @register.filter(name='wear_clothing_guide')
 def wear_clothing_guide(today_weather):
-    mean_temperature = (today_weather.min_temperature+today_weather.max_temperature)/2
+    mean_temperature = (today_weather.min_temperature + today_weather.max_temperature) / 2
     if mean_temperature <= 0:
         return "棉衣、冬大衣、皮夹克、厚呢外套、呢帽、手套、羽绒服、裘皮大衣"
     elif 0 < mean_temperature <= 5:
@@ -85,3 +85,11 @@ def wear_clothing_guide(today_weather):
         return '轻棉织物制作的短衣、短裙、薄短裙、短裤'
     else:
         return "没有推荐"
+
+
+# 穿衣指数
+@register.filter(name='clean_mydate')
+def clean_mydate(date_str):
+    date_str = str(date_str)
+    date_str = date_str.replace("年", "-").replace("月", "-").replace("日", "-")
+    return date_str

@@ -631,6 +631,7 @@ class get_today_aqi_bar(APIView):  # 按月份分，或者按年分
     def get(self, request, *args, **kwargs):
         city_id = request.GET.get("city_id")
         today_date = datetime.date.today()
+        select_date = request.GET.get("select_date", today_date)
 
         if not city_id:
             city_id = City.objects.get(name="茂名").id
@@ -638,8 +639,8 @@ class get_today_aqi_bar(APIView):  # 按月份分，或者按年分
             f'''select * from HourWeather where weather_id = (
             select id from DateWeather where city_id=(
             select id from City where id='{city_id}') 
-            and date='{today_date}') 
-            and belong_to_date ='{today_date}' order by hour ;
+            and date='{select_date}') 
+            and belong_to_date ='{select_date}' order by hour ;
             ''')
         temp_df = pd.DataFrame(result)
         # 都使用df来进行处理和显示
@@ -761,6 +762,9 @@ class _price(APIView):
 class today_temperature_detail_line(APIView):  # 不同城市中的房东数量  # todo 改成当天天气数据变化曲线图，api如何传递参数
     def get(self, request, *args, **kwargs):
         city_id = request.GET.get("city_id")
+        now_date = datetime.datetime.now().date()
+        select_date = request.GET.get("select_date", now_date)
+
         if not city_id:
             city_id = City.objects.get(name="茂名").id
 
@@ -768,8 +772,8 @@ class today_temperature_detail_line(APIView):  # 不同城市中的房东数量 
         result = fetchall_sql_dict(
             f'''select * from HourWeather where weather_id = (
             select id from DateWeather where city_id={city_id}
-            and date=curdate() ) 
-            and belong_to_date =curdate() order by hour ;
+            and date='{select_date}' ) 
+            and belong_to_date ='{select_date}' order by hour ;
             ''')  # 用line？  # 按24小时进行排序才可以
 
         temp_df = pd.DataFrame(result)

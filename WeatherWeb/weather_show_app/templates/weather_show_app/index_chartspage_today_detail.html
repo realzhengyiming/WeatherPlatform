@@ -37,17 +37,17 @@
       </div>
       <div class="mdui-collapse-item-body mdui-list  mdui-collapse-item-open  ">
            <a href="{% url 'weather_show_app:host' %}" class="mdui-list-item mdui-ripple mdui-list-item-active">各城市当天天气分析</a>
-          <!--<a href="{% url 'weather_show_app:consumer' %}" class="mdui-list-item mdui-ripple ">房客专区</a>-->
-    <a href="{% url 'weather_show_app:price' %}" class="mdui-list-item mdui-ripple ">房源价格分析</a>
-       <!--<a href="{% url 'weather_show_app:detaillist' %}" class="mdui-list-item mdui-ripple ">地理位置分析</a>-->
-        <a href="{% url 'weather_show_app:time' %}" class="mdui-list-item mdui-ripple ">发布时间分析</a>
-      <!--<a href="{% url 'weather_show_app:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>-->
-        <a href="{% url 'weather_show_app:area' %}" class="mdui-list-item mdui-ripple ">房源面积分析</a>
-      <!--<a href="{% url 'weather_show_app:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>-->
-        <!--<a href="{% url 'weather_show_app:facilityPage' %}" class="mdui-list-item mdui-ripple ">房源</a>-->
-        <a href="{% url 'weather_show_app:facilityPage' %}" class="mdui-list-item mdui-ripple ">房源设施分析</a>
-             <a ><div class="mdui-divider"></div></a>
-        <a href="{% url 'weather_show_app:assess' %}" class="mdui-list-item mdui-ripple ">房源价格评估</a>
+<!--          &lt;!&ndash;<a href="{% url 'weather_show_app:consumer' %}" class="mdui-list-item mdui-ripple ">房客专区</a>&ndash;&gt;-->
+<!--    <a href="{% url 'weather_show_app:price' %}" class="mdui-list-item mdui-ripple ">房源价格分析</a>-->
+<!--       &lt;!&ndash;<a href="{% url 'weather_show_app:detaillist' %}" class="mdui-list-item mdui-ripple ">地理位置分析</a>&ndash;&gt;-->
+<!--        <a href="{% url 'weather_show_app:time' %}" class="mdui-list-item mdui-ripple ">发布时间分析</a>-->
+<!--      &lt;!&ndash;<a href="{% url 'weather_show_app:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>&ndash;&gt;-->
+<!--        <a href="{% url 'weather_show_app:area' %}" class="mdui-list-item mdui-ripple ">房源面积分析</a>-->
+<!--      &lt;!&ndash;<a href="{% url 'weather_show_app:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>&ndash;&gt;-->
+<!--        &lt;!&ndash;<a href="{% url 'weather_show_app:facilityPage' %}" class="mdui-list-item mdui-ripple ">房源</a>&ndash;&gt;-->
+<!--        <a href="{% url 'weather_show_app:facilityPage' %}" class="mdui-list-item mdui-ripple ">房源设施分析</a>-->
+<!--             <a ><div class="mdui-divider"></div></a>-->
+<!--        <a href="{% url 'weather_show_app:assess' %}" class="mdui-list-item mdui-ripple ">房源价格评估</a>-->
 
     </div>
   </div>
@@ -88,7 +88,25 @@
         {% endfor %}
 </select>
 
+
+    <select name="select_date" id="select_date" class="mdui-select" form="choice_city">   # todo 提交表单这个东西可以
+  <option  value="{{today_weather.date|clean_mydate}}" selected>{{today_weather.date|clean_mydate}}</option>
+            {% for date in past_dates %}
+      <option id="city_{{date|clean_mydate}}" value="{{date|clean_mydate}}">{{date|clean_mydate}}</option>
+            {% endfor %}
+    </select>
+
+<!--    <input name='select_date' type="date" value="{{today_weather.date|clean_mydate}}"/>-->
+<!--    日期选择-->
+
+
     <input type="submit">
+    <br>
+
+
+    <h2>
+    当天天气情况
+</h2>
 </form>
 <br><div class="mdui-chip">
   <span class="mdui-chip-title">天气情况：{{today_weather.state}}</span>
@@ -130,7 +148,7 @@
             retry_counter = 0
             $.ajax({
                 type: "GET",
-                url: "{% url 'weather_show_app:get_today_aqi_line' %}?city_id={{city_id}}",
+                url: "{% url 'weather_show_app:get_today_aqi_line' %}?city_id={{city_id}}&select_date={{select_date}}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -182,7 +200,7 @@
         function fetchData_timeline() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'weather_show_app:get_hostReplay' %}?city_id={{city_id}}",
+                url: "{% url 'weather_show_app:get_hostReplay' %}?city_id={{city_id}}&select_date={{select_date}}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,
@@ -226,7 +244,7 @@
         function fetchData_drawmap() {
             $.ajax({
                 type: "GET",
-                url: "{% url 'weather_show_app:today_temperature_line' %}?city_id={{city_id}}",
+                url: "{% url 'weather_show_app:today_temperature_line' %}?city_id={{city_id}}&select_date={{select_date}}",
                 dataType: 'json',
                 async: true,
                 timeout:5000,   //15秒
@@ -260,6 +278,44 @@
 
 </div>
 
+
+      <h2>
+          未来几天天气情况
+      </h2>
+      <div class="mdui-table-fluid">
+          <table class="mdui-table">
+            <thead>
+              <tr>
+                <th>日期</th>
+                <th>天气情况</th>
+                <th>最高温</th>
+                <th>最低温</th>
+                <th>风力</th>
+                <th>风向</th>
+
+
+              </tr>
+            </thead>
+            <tbody>
+            {% if future_weathers %}
+            {% for weather in  future_weathers %}
+              <tr>
+                <td>{{weather.date}}</td>
+                <td>{{weather.state}}</td>
+                <td>{{weather.max_temperature}}</td>
+                <td>{{weather.min_temperature}}</td>
+                <td>{{weather.wind_power}}</td>
+                <td>{{weather.wind_direction}}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+            😬暂时没有未来的天气数据哦～
+            {% endif %}
+
+            </tbody>
+          </table>
+        </div>
+<br><br>
 {% endblock %}
 
 {% block tail %}
