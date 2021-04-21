@@ -44,6 +44,12 @@ def get_city_today_weather(city_id):
     return today_weather
 
 
+@register.filter(name='get_city_by_id')
+def get_city_by_id(city_id):
+    city = City.objects.get(id=city_id)
+    return city.name
+
+
 @register.filter(name='get_max_temperature')
 def get_max_temperature(today_weather):
     return today_weather.max_temperature
