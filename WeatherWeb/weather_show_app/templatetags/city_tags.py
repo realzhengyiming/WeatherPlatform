@@ -18,7 +18,7 @@ import datetime
 
 from django import template
 
-from weather_show_app.constant import walk_out_guide_dict
+from weather_show_app.constant import WALK_OUT_GUIDE_DICT
 from weather_show_app.models import City, DateWeather
 
 register = template.Library()
@@ -70,7 +70,7 @@ def get_state(today_weather):
 def state_to_outdoor_guide(state):
     if not state:
         return "无推荐"
-    return walk_out_guide_dict[state]
+    return WALK_OUT_GUIDE_DICT[state]
 
 
 # 穿衣指数

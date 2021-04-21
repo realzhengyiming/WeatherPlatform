@@ -5,6 +5,7 @@ import time
 from io import BytesIO
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from django.core.cache import cache  # 导入缓存对象,redis存储
 from django.db import connection
@@ -15,7 +16,8 @@ from pyecharts.charts import Bar, Pie, Line, Geo, Map, Radar
 from pyecharts.globals import ThemeType, ChartType
 from rest_framework.views import APIView
 from sklearn.model_selection import train_test_split
-import numpy as np
+
+from .constant import ALL_DIRECTION_MAPPING_DICT
 from .models import DateWeather, City
 
 
@@ -667,57 +669,50 @@ class get_today_aqi_bar(APIView):  # 按月份分，或者按年分
 
 # 最常在线回复的前100房东
 class wind_graph(APIView):
-    # @cache_response(timeout=60 * 60*3, cache='default')
     def get(self, request, *args, **kwargs):
-        # timeFreq = request.GET.get("timeFreq")
-        # print(timeFreq)
-        print("host,重新查询")
-        # result = fetchall_sql_dict(
-        #     '''SELECT distinct host_id,host_name,host_RoomNum,host_replayRate,host_commentNum FROM `hotelapp_host` order by host_RoomNum DESC''')
-        # temp_df = pd.DataFrame(result)
-        # 都使用df来进host行处理和显示
-        #
-        # print("显示数据")
-        # print(len(temp_df))
-        # temp_df = temp_df.sort_values(by=['host_replayRate', 'host_commentNum'], ascending=False)
-        v1 =[[4300, 10000, 28000, 35000, 50000, 19000]]
-        v2 =[[5000, 14000, 28000, 31000, 42000, 21000]]
+        city_id = request.GET.get("city_id")
+        today_date = datetime.date.today()
+        select_date = request.GET.get("select_date", today_date)
 
-        c = (
-        Radar(init_opts=opts.InitOpts(width="1280px", height="720px", bg_color="#CCCCCC"))
-        .add_schema(
+        if not city_id:
+            city_id = City.objects.get(name="茂名").id
+        result = fetchall_sql_dict(
+            f'''select * from HourWeather where weather_id = (
+            select id from DateWeather where city_id=(
+            select id from City where id='{city_id}') 
+            and date='{select_date}') 
+            and belong_to_date ='{select_date}' order by hour ;
+            ''')
+        temp_df = pd.DataFrame(result)
+
+        # 都使用df来进行处理和显示
+        today_24hour_winds = temp_df[['wind_power', "wind_direction", "hour"]]
+        today_24hour_winds['hour'] = today_24hour_winds['hour'].apply(int)
+
+        rader = Radar(init_opts=opts.InitOpts(width="1280px", height="720px")).add_schema(
             schema=[
-                opts.RadarIndicatorItem(name="北风", max_=6500),
-                opts.RadarIndicatorItem(name="东北风", max_=16000),
-                opts.RadarIndicatorItem(name="东风", max_=30000),
-                opts.RadarIndicatorItem(name="东南风", max_=38000),
-                opts.RadarIndicatorItem(name="南风", max_=52000),
-                opts.RadarIndicatorItem(name="西南风", max_=25000),
-                opts.RadarIndicatorItem(name="西风", max_=25000),
-                opts.RadarIndicatorItem(name="西北风", max_=25000),
+                opts.RadarIndicatorItem(name="北风", max_=10),
+                opts.RadarIndicatorItem(name="东北风", max_=10),
+                opts.RadarIndicatorItem(name="东风", max_=10),
+                opts.RadarIndicatorItem(name="东南风", max_=10),
+                opts.RadarIndicatorItem(name="南风", max_=10),
+                opts.RadarIndicatorItem(name="西南风", max_=10),
+                opts.RadarIndicatorItem(name="西风", max_=10),
+                opts.RadarIndicatorItem(name="西北风", max_=10),
             ],
             splitarea_opt=opts.SplitAreaOpts(
                 is_show=True, areastyle_opts=opts.AreaStyleOpts(opacity=1)
             ),
-            textstyle_opts=opts.TextStyleOpts(color="#fff"),
         )
-            .add(
-            series_name="预算分配（Allocated Budget）",
-            data=v1,
-            linestyle_opts=opts.LineStyleOpts(color="#CD0000"),
-        )
-            .add(
-            series_name="实际开销（Actual Spending）",
-            data=v2,
-            linestyle_opts=opts.LineStyleOpts(color="#5CACEE"),
-        )
-            .set_series_opts(label_opts=opts.LabelOpts(is_show=False))
-            .set_global_opts(
-            title_opts=opts.TitleOpts(title="基础雷达图"), legend_opts=opts.LegendOpts()
-        )
-            .dump_options_with_quotes()
-        )
-
+        for index, row in today_24hour_winds.iterrows():
+            wind_power,wind_direction,hour = list(row)
+            temp_hour_wind = [0 for i in range(8)]
+            temp_hour_wind[ALL_DIRECTION_MAPPING_DICT[wind_direction]] = wind_power
+            rader.add(series_name=f"{hour+1}时", data=[temp_hour_wind])
+        c = (rader.set_series_opts(label_opts=opts.LabelOpts(is_show=True))
+             .set_global_opts(
+                              legend_opts=opts.LegendOpts())
+             .dump_options_with_quotes())
         return JsonResponse(json.loads(c))
 
 
