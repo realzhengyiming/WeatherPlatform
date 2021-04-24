@@ -13,6 +13,7 @@ from django.db.models import Count  # 直接使用models中的统计类来进行
 from django.http import HttpResponse
 from pyecharts import options as opts
 from pyecharts.charts import Bar, Pie, Line, Geo, Map, Radar
+from pyecharts.faker import Faker
 from pyecharts.globals import ThemeType, ChartType
 from rest_framework.views import APIView
 from sklearn.model_selection import train_test_split
@@ -115,7 +116,7 @@ class PieView(APIView):  # 房型饼图,天气饼图？good
                      )
                 .set_global_opts(title_opts=opts.TitleOpts(title="天气类型"),
                                  legend_opts=opts.LegendOpts(pos_left="15%",
-                                                             type_='scroll'),
+                                                             type_='scroll',is_show=False),
 
                                  )
                 .set_series_opts(label_opts=opts.LabelOpts(
@@ -258,25 +259,36 @@ class _postTime_cityName(APIView):  # todo 各个城市新增的东西 经纬度
         return JsonResponse(json.loads(c))  # f安徽这个
 
 
-class drawMap(APIView):  # 要加apiview # 美团房源数量热力图
+class drawMap(APIView):
     def get(self, request, *args, **kwargs):
+
+        print("checker")
+        print([list(z) for z in zip(Faker.provinces, Faker.values())])
 
         result = cache.get('weather_city', None)  # 使用缓存，可以共享真好。
         if result is None:  # 如果无，则向数据库查询数据
             print("读取缓存中的城市")
             result = fetchall_sql(  # 这个sql也是有问题的。
-                """select direct_city_name,count(direct_city_name) as count from 
-                 (SELECT distinct(id),direct_city_name FROM  City where is_city=1) result group by direct_city_name;""")
+                """select name, count(name) as counter
+                    from (
+                             select direct_city_name as name
+                             from DateWeather
+                                      left join City on DateWeather.city_id = City.id
+                             where is_city = true
+                    ) as t group by name;""")
             cache.set('weather_city', result, 3600 * 12)  # 设置缓存
 
         else:
             pass
+        print("打印看看")
+        print([list(z) for z in zip([i[0] for i in result], [i[1] for i in result])])
         c = (
             Geo()
-                .add_schema(maptype="china")
+                .add_schema(maptype="china-cities")
                 .add(
                 "城市",
-                [z for z in zip([i[0] for i in result], [i[1] for i in result])],
+                [z for z in zip([i[0] for i in result], [i[1] for i in result])]
+                ,
                 # type_=ChartType.SCATTER,  # 修改图的类型
                 type_=ChartType.EFFECT_SCATTER,
 
@@ -290,16 +302,34 @@ class drawMap(APIView):  # 要加apiview # 美团房源数量热力图
         )
 
         c = (Map()
-             .add("商家A",
-                  [z for z in zip([i[0] for i in result], [i[1] for i in result])],
+            .add("商家A",
+                 [z for z in zip([i[0] for i in result], [i[1] for i in result])],
 
-                  "广东")
-             .set_global_opts(
+                 "广东")
+            .set_global_opts(
             title_opts=opts.TitleOpts(title="中国地图"), visualmap_opts=opts.VisualMapOpts()
         )
-             .dump_options_with_quotes()
 
-             )
+        )
+
+        c = (
+            Map()
+                .add("天气数据",
+                     [list(z) for z in zip([i[0] for i in result], [i[1] for i in result])]
+                     , "china")
+                .set_global_opts(
+                title_opts=opts.TitleOpts(title="Map-VisualMap（分段型）"),
+                visualmap_opts=opts.VisualMapOpts(max_=200, is_piecewise=True),
+            )
+                .dump_options_with_quotes()
+        )
+
+        c = (
+            Geo()
+                .add_schema(maptype="china")
+                .set_global_opts(title_opts=opts.TitleOpts(title="china"))
+                .dump_options_with_quotes()
+        )
 
         return JsonResponse(json.loads(c))  # f安徽这个
 
@@ -705,13 +735,13 @@ class wind_graph(APIView):
             ),
         )
         for index, row in today_24hour_winds.iterrows():
-            wind_power,wind_direction,hour = list(row)
+            wind_power, wind_direction, hour = list(row)
             temp_hour_wind = [0 for i in range(8)]
             temp_hour_wind[ALL_DIRECTION_MAPPING_DICT[wind_direction]] = wind_power
-            rader.add(series_name=f"{hour+1}时", data=[temp_hour_wind])
+            rader.add(series_name=f"{hour + 1}时", data=[temp_hour_wind])
         c = (rader.set_series_opts(label_opts=opts.LabelOpts(is_show=True))
              .set_global_opts(
-                              legend_opts=opts.LegendOpts())
+            legend_opts=opts.LegendOpts())
              .dump_options_with_quotes())
         return JsonResponse(json.loads(c))
 

@@ -80,43 +80,43 @@
 <div class="mdui-container">
 
 
-    <div id="timeline-hide">
-    <div class="mdui-center mdui-spinner mdui-spinner-colorful" style="margin-top: 200px;"></div>
-</div>
-    <div class="mdui-center" id="timeline" style="width:800px; height:300px;display: none;margin-top: 20px;"></div>
-    <script>
-        var timeline_chart = echarts.init(document.getElementById('timeline'), 'white', {renderer: 'canvas'});
-        $(
-            function () {
-                fetchData_timeline(timeline_chart);
-                //{#setInterval(fetchData_timeline, 10000);#}
-            }
-        );
+<!--    <div id="timeline-hide">-->
+<!--    <div class="mdui-center mdui-spinner mdui-spinner-colorful" style="margin-top: 200px;"></div>-->
+<!--</div>-->
+<!--    <div class="mdui-center" id="timeline" style="width:800px; height:300px;display: none;margin-top: 20px;"></div>-->
+<!--    <script>-->
+<!--        var timeline_chart = echarts.init(document.getElementById('timeline'), 'white', {renderer: 'canvas'});-->
+<!--        $(-->
+<!--            function () {-->
+<!--                fetchData_timeline(timeline_chart);-->
+<!--                //{#setInterval(fetchData_timeline, 10000);#}-->
+<!--            }-->
+<!--        );-->
 
-        function fetchData_timeline() {
-            $.ajax({
-                type: "GET",
-                url: "/weather_show_app/timeline/",
-                dataType: 'json',
-                async: true,
-                timeout:5000,
-                success: function (result) {
-                    timeline_chart.setOption(result.data);
-                    $('#timeline-hide').css('display','none');  // 组件完全隐藏，不占用显示时占用的位置
-		            $('#timeline').css('display','block');   //在设置组件可以看
-                },
-                error : function(XMLHttpRequest,status) { //请求完成后最终执行参数
-                    if (status === 'timeout') {
-                        //超时,status还有success,error等值的情况
-                        $.ajax(this).abort();
-                        console.log("超时,已重试");
-                        $.ajax(this);
-                        return
-                    }
-                }
-            });
-        }
-    </script>
+<!--        function fetchData_timeline() {-->
+<!--            $.ajax({-->
+<!--                type: "GET",-->
+<!--                url: "/weather_show_app/timeline/",-->
+<!--                dataType: 'json',-->
+<!--                async: true,-->
+<!--                timeout:5000,-->
+<!--                success: function (result) {-->
+<!--                    timeline_chart.setOption(result.data);-->
+<!--                    $('#timeline-hide').css('display','none');  // 组件完全隐藏，不占用显示时占用的位置-->
+<!--		            $('#timeline').css('display','block');   //在设置组件可以看-->
+<!--                },-->
+<!--                error : function(XMLHttpRequest,status) { //请求完成后最终执行参数-->
+<!--                    if (status === 'timeout') {-->
+<!--                        //超时,status还有success,error等值的情况-->
+<!--                        $.ajax(this).abort();-->
+<!--                        console.log("超时,已重试");-->
+<!--                        $.ajax(this);-->
+<!--                        return-->
+<!--                    }-->
+<!--                }-->
+<!--            });-->
+<!--        }-->
+<!--    </script>-->
 
     <div class="mdui-row">
     <br>

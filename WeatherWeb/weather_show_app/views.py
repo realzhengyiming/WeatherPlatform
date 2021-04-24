@@ -59,50 +59,10 @@ def testindex(request):  # 测试页
 
     return render(request, 'weather_show_app/test.html', context={"article": result})
 
-
 # @login_required(login_url='/loginpage/')  # 详情页
 def detaillist(request):  # 数据列表页分页
-    # userObj = models.Asset.objects.filter(~Q(asset_id='')
-    username = request.user.username
-    # 提取收藏夹
-    fav = []
-    # try:
-    #     tempUser = User.objects.filter(username=username).first()
-
-        # print(tempUser)
-        # print(type(tempUser))
-        # fav = tempUser.favourite.fav_houses.all()
-    # except City.DoesNotExist:
-    #     house_list = City.objects.filter(~Q(house_oriprice=0.00)).order_by("-house_date").order_by("-id")
-
-    # 提取出价格，面积，城市，并且高分的
-    # if not fav:
-    #     house_list = City.objects.filter(~Q(house_oriprice=0.00)).order_by("-house_date").order_by("-id")
-    # else:
-    #     temp_city = []
-    #     temp_area = []
-    #     temp_price = []
-    #     for house in fav:
-    #         print(house)
-            # temp_city.append(house.house_cityName)
-            # temp_area.append(house.house_area)
-            # temp_price.append(house.house_oriprice)
-
-        # ran_li = random.sample(temp_city, 1)
-        # medianprice = int(pd.DataFrame(temp_price)[0].median())
-        # print(medianprice)  # Q(house_oriprice_lt=medianprice)
-        # 根据标签总数，来对比，
-        # house_list = City.objects.filter(Q(house_cityName=ran_li[0])).order_by("-house_favcount").order_by("-id")
-
     today = datetime.datetime.now().date()
-    date_weathers = DateWeather.objects.filter(date=today).order_by("-id")
-    # house_list = house_list+house_listMain
-    # a = []
-
-    # a.extend(house_list)
-
-    # a.extend(house_listMain)
-
+    date_weathers = DateWeather.objects.filter(date=today).order_by("-id").order_by("city_id")
     paginator = Paginator(date_weathers, 20)  # 2个一页的意思
     page = request.GET.get("page")
     try:
