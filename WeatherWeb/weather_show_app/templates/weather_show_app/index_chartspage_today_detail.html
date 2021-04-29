@@ -229,6 +229,49 @@
         }
     </script>
 
+          <div class="mdui-center" id="draw_relative_humidity" style="width:800px; height:400px;"></div>
+    <script>
+        var drawmap_humidity_chart = echarts.init(document.getElementById('draw_relative_humidity'), 'white', {renderer: 'canvas'});
+        $(
+            function () {
+                fetchData_humidity_drawmap(drawmap_humidity_chart);
+                //{#setInterval(fetchData_drawmap, 10000);#}
+            }
+        );
+        //
+        function fetchData_humidity_drawmap() {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'weather_show_app:draw_relative_humidity' %}?city_id={{city_id}}&select_date={{select_date}}",
+                dataType: 'json',
+                async: true,
+                timeout:5000,   //15秒
+
+                success: function (result) {
+                    drawmap_humidity_chart.setOption(result.data);
+                },
+                error : function(XMLHttpRequest,status) { //请求完成后最终执行参数
+                    if (status === 'timeout') {
+                        if (retry_counter > 3){
+                            mdui.alert('已超时...');
+                            return
+                        }else{
+                            $.ajax(this).abort();
+                        console.log("超时,已重试");
+                        $.ajax(this);
+                        return
+                        }
+
+
+                    }
+                }
+
+            });
+        }
+
+
+    </script>
+
 {#这个是地图#}
         <br>
     <br>
@@ -257,11 +300,13 @@
                     if (status === 'timeout') {
                         //超时,status还有success,error等值的情况
                         if (retry_counter > 3){
+                            mdui.alert('已超时...');
                             return
                         }else{
                             $.ajax(this).abort();
-                        console.log("超时,已重试");
-                        $.ajax(this);
+                            console.log("超时,已重试");
+
+                            $.ajax(this);
                         return
                         }
 

@@ -116,7 +116,7 @@ class PieView(APIView):  # 房型饼图,天气饼图？good
                      )
                 .set_global_opts(title_opts=opts.TitleOpts(title="天气类型"),
                                  legend_opts=opts.LegendOpts(pos_left="15%",
-                                                             type_='scroll',is_show=False),
+                                                             type_='scroll', is_show=False),
 
                                  )
                 .set_series_opts(label_opts=opts.LabelOpts(
@@ -301,7 +301,7 @@ class drawMap(APIView):
                 .dump_options_with_quotes()
         )
 
-        c = (Map()
+        c = (Map()  # 这个可以处理的，去掉那些没用的东西
             .add("商家A",
                  [z for z in zip([i[0] for i in result], [i[1] for i in result])],
 
@@ -325,10 +325,22 @@ class drawMap(APIView):
         )
 
         c = (
-            Geo()
-                .add_schema(maptype="china")
-                .set_global_opts(title_opts=opts.TitleOpts(title="china"))
-                .dump_options_with_quotes()
+            Map()
+                .add(series_name="城市分布", data_pair=data, maptype="china", zoom=1, center=[105, 38])
+                .set_global_opts(
+                title_opts=opts.TitleOpts(title="建设单位地理位置分析"),
+                visualmap_opts=opts.VisualMapOpts(max_=5000, is_piecewise=True,
+                                                  pieces=[{"max": 999, "min": 0, "label": "0-999", "color": "#FFE4E1"},
+                                                          {"max": 1999, "min": 1000, "label": "1000-1999",
+                                                           "color": "#FF7F50"},
+                                                          {"max": 2999, "min": 2000, "label": "2000-2999",
+                                                           "color": "#F08080"},
+                                                          {"max": 3999, "min": 3000, "label": "3000-3999",
+                                                           "color": "#CD5C5C"},
+                                                          {"max": 5000, "min": 4000, "label": "4000-5000",
+                                                           "color": "#8B0000"}]
+                                                  )
+            )
         )
 
         return JsonResponse(json.loads(c))  # f安徽这个
@@ -658,7 +670,6 @@ class get_postTimeLine(APIView):  # 按月份分，或者按年分
         return JsonResponse(json.loads(c))
 
 
-# 这几个是可以使用url切换参数的
 class get_today_aqi_bar(APIView):  # 按月份分，或者按年分
     def get(self, request, *args, **kwargs):
         city_id = request.GET.get("city_id")
@@ -697,7 +708,39 @@ class get_today_aqi_bar(APIView):  # 按月份分，或者按年分
         return JsonResponse(json.loads(c))
 
 
-# 最常在线回复的前100房东
+class get_today_average_humity(APIView):  # 按月份分，或者按年分
+    def get(self, request, *args, **kwargs):
+        print("水球图")
+        city_id = request.GET.get("city_id")
+        today_date = datetime.date.today()
+        select_date = request.GET.get("select_date", today_date)
+
+        if not city_id:
+            city_id = City.objects.get(name="茂名").id
+        result = fetchall_sql_dict(
+            f'''select * from HourWeather where weather_id = (
+            select id from DateWeather where city_id=(
+            select id from City where id='{city_id}') 
+            and date='{select_date}') 
+            and belong_to_date ='{select_date}' order by hour ;
+            ''')
+        temp_df = pd.DataFrame(result)
+        # 都使用df来进行处理和显示
+        temp_df = temp_df.replace(0, np.nan)
+        temp_df['relative_humidity'].fillna((temp_df['relative_humidity'].mean()), inplace=True)
+        relative_humidity = round(temp_df['relative_humidity'].mean()*0.01, 2)
+        from pyecharts import options as opts
+        from pyecharts.charts import Liquid
+
+        c = (
+            Liquid()
+                .add("lq", [relative_humidity, 0.6, 0.7], is_outline_show=False)
+                .set_global_opts(title_opts=opts.TitleOpts(title="24小时平均湿度"))
+                .dump_options_with_quotes()
+        )
+        return JsonResponse(json.loads(c))
+
+
 class wind_graph(APIView):
     def get(self, request, *args, **kwargs):
         city_id = request.GET.get("city_id")

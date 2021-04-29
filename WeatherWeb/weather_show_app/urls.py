@@ -49,7 +49,7 @@ urlpatterns = [  # todo 记得要删除这些坏东西/
     path("getHotTitle/", views.getHotTitle.as_view(), name="getHotTitle"),
     # 增加一个显示可视化的,下面是api类的接口resf
 
-    # 增加一个显示可视化的,下面是api类的接口resf
+    # 增加一个显示可视化的,下面是api类的接口resf                  url: "{% url 'weather_show_app:draw_relative_humidity' %}?city_id={{city_id}}&select_date={{select_date}}",
     path('bar/', drawviews.ChartView.as_view(), name='bar'),
     path("_price/", drawviews._price.as_view(), name='_price'),
     path("pie/", drawviews.PieView.as_view(), name="pie"),
@@ -63,6 +63,7 @@ urlpatterns = [  # todo 记得要删除这些坏东西/
     path("house_firstOnSale/", drawviews.get_twoLatestYear.as_view(), name="house_firstOnSale"),
     path("get_postTimeLine/", drawviews.get_postTimeLine.as_view(), name="get_postTimeLine"),
     path("get_today_aqi_line/", drawviews.get_today_aqi_bar.as_view(), name="get_today_aqi_line"),
+    path("get_relative_humidity/", drawviews.get_today_average_humity.as_view(), name="draw_relative_humidity"),
     path("get_hostReplay/", drawviews.wind_graph.as_view(), name="get_hostReplay"),
     path("_price_bar/", drawviews._price_bar.as_view(), name="_price_bar"),  # 这个是画歌饼的
     path("_price_boxplot/", drawviews._price_boxplot.as_view(), name="_price_boxplot"),  # 这个是画box图的
