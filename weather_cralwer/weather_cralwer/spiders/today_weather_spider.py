@@ -76,6 +76,7 @@ class ChinaWeatherSpider(scrapy.Spider):
     def parse_7days_data(self, html: str, city_name: str) -> List[DateWeatherItem]:
 
         now_date = datetime.datetime.now().strftime('%Y-%m-')
+        future_date = (datetime.date.today() + datetime.timedelta(days=6)).strftime("%Y-%m-")  # 如果发现6天后是换月了
 
         html = html.replace("\n", "")
         html = html[html.find("=") + 1:]
@@ -88,7 +89,10 @@ class ChinaWeatherSpider(scrapy.Spider):
             min_temperature = min(temp_temperature_list)
             max_temperature = max(temp_temperature_list)
             temp_day = day[0].split(",")
-            day_short_info_item['date'] = now_date + temp_day[0].split("日")[0]  # 获得 日期的号
+
+            fetch_day = temp_day[0].split("日")[0]
+            date_pattern = future_date if int(fetch_day) <= 7 else now_date
+            day_short_info_item['date'] = date_pattern + fetch_day  # 获得 日期的号 如果是月底那还是可以找到
             day_short_info_item['state'] = temp_day[2]
             day_short_info_item['humidity'] = 0.0
             day_short_info_item['city_name'] = city_name  # 这个是城市名，还需要改成真正的城市对象才可以

@@ -62,6 +62,8 @@ class City(models.Model):
     is_city = models.BooleanField(default=False)  # 地图只能显示地级市，而无法判断 城市内的区域，比如 南山
     direct_city_name = models.CharField(max_length=100, default="")  # 增加了城市名,脚本处理写入
 
+    belong_province = models.CharField(max_length=100, default="")  # 属于的省份
+
     # 对应中国天气网的url code http://www.weather.com.cn/weather/101080101.shtml
 
     def __str__(self):
