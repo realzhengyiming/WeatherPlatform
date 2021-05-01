@@ -271,79 +271,47 @@ class drawMap(APIView):
             result = fetchall_sql(  # 这个sql也是有问题的。
                 """select name, count(name) as counter
                     from (
-                             select direct_city_name as name
+                             select belong_province as name
                              from DateWeather
                                       left join City on DateWeather.city_id = City.id
-                             where is_city = true
-                    ) as t group by name;""")
-            cache.set('weather_city', result, 3600 * 12)  # 设置缓存
+                                      where name!=''
+                    )  as t where name<>'' group by name;""")
 
         else:
             pass
+
         print("打印看看")
-        print([list(z) for z in zip([i[0] for i in result], [i[1] for i in result])])
-        c = (
-            Geo()
-                .add_schema(maptype="china-cities")
-                .add(
-                "城市",
-                [z for z in zip([i[0] for i in result], [i[1] for i in result])]
-                ,
-                # type_=ChartType.SCATTER,  # 修改图的类型
-                type_=ChartType.EFFECT_SCATTER,
-
-            )
-                .set_series_opts(label_opts=opts.LabelOpts(is_show=False))
-                .set_global_opts(
-                visualmap_opts=opts.VisualMapOpts(),
-                title_opts=opts.TitleOpts(title="抓取到的地级市"),
-            )
-                .dump_options_with_quotes()
-        )
-
-        c = (Map()  # 这个可以处理的，去掉那些没用的东西
-            .add("商家A",
-                 [z for z in zip([i[0] for i in result], [i[1] for i in result])],
-
-                 "广东")
-            .set_global_opts(
-            title_opts=opts.TitleOpts(title="中国地图"), visualmap_opts=opts.VisualMapOpts()
-        )
-
-        )
-
+        province_names = [i[0].replace("市", "")
+                              .replace("省", "")
+                              .replace("壮族自治区", "")
+                              .replace("维吾尔自治区", "")
+                              .replace("自治区", "")
+                              .replace('特别行政区', '')
+                          for i in result]
+        province_names_number = [i[1] for i in result]
+        zip_data = [list(z) for z in zip(province_names, province_names_number)]
         c = (
             Map()
-                .add("天气数据",
-                     [list(z) for z in zip([i[0] for i in result], [i[1] for i in result])]
-                     , "china")
+                .add(series_name="天气数据省份分布", data_pair=zip_data, maptype="china", zoom=1, center=[105, 38])
                 .set_global_opts(
-                title_opts=opts.TitleOpts(title="Map-VisualMap（分段型）"),
-                visualmap_opts=opts.VisualMapOpts(max_=200, is_piecewise=True),
-            )
-                .dump_options_with_quotes()
-        )
-
-        c = (
-            Map()
-                .add(series_name="城市分布", data_pair=data, maptype="china", zoom=1, center=[105, 38])
-                .set_global_opts(
-                title_opts=opts.TitleOpts(title="建设单位地理位置分析"),
-                visualmap_opts=opts.VisualMapOpts(max_=5000, is_piecewise=True,
-                                                  pieces=[{"max": 999, "min": 0, "label": "0-999", "color": "#FFE4E1"},
-                                                          {"max": 1999, "min": 1000, "label": "1000-1999",
-                                                           "color": "#FF7F50"},
-                                                          {"max": 2999, "min": 2000, "label": "2000-2999",
-                                                           "color": "#F08080"},
-                                                          {"max": 3999, "min": 3000, "label": "3000-3999",
-                                                           "color": "#CD5C5C"},
-                                                          {"max": 5000, "min": 4000, "label": "4000-5000",
-                                                           "color": "#8B0000"}]
+                title_opts=opts.TitleOpts(title="天气数据省份分布"),
+                visualmap_opts=opts.VisualMapOpts(max_=13000, is_piecewise=False,
+                                                  # pieces=[{"max": 999, "  min": 0, "label": "0-999", "color": "#FFE4E1"},
+                                                  #         {"max": 1999, "min": 1000, "label": "1000-1999",
+                                                  #          "color": "#FF7F50"},
+                                                  #         {"max": 2999, "min": 2000, "label": "2000-2999",
+                                                  #          "color": "#F08080"},
+                                                  #         {"max": 3999, "min": 3000, "label": "3000-3999",
+                                                  #          "color": "#CD5C5C"},
+                                                  #         {"max": 5000, "min": 4000, "label": "4000-5000",
+                                                  #          "color": "#8B0000"}]
                                                   )
             )
+                .dump_options_with_quotes()
+
         )
 
-        return JsonResponse(json.loads(c))  # f安徽这个
+        return JsonResponse(json.loads(c))
 
 
 # 下面是详情页的函数
@@ -728,7 +696,7 @@ class get_today_average_humity(APIView):  # 按月份分，或者按年分
         # 都使用df来进行处理和显示
         temp_df = temp_df.replace(0, np.nan)
         temp_df['relative_humidity'].fillna((temp_df['relative_humidity'].mean()), inplace=True)
-        relative_humidity = round(temp_df['relative_humidity'].mean()*0.01, 2)
+        relative_humidity = round(temp_df['relative_humidity'].mean() * 0.01, 2)
         from pyecharts import options as opts
         from pyecharts.charts import Liquid
 
