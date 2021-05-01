@@ -289,13 +289,15 @@ class drawMap(APIView):
                               .replace('特别行政区', '')
                           for i in result]
         province_names_number = [i[1] for i in result]
+        max_total_size = max(province_names_number)
+        print(f"最大值是 {max_total_size}")
         zip_data = [list(z) for z in zip(province_names, province_names_number)]
         c = (
             Map()
                 .add(series_name="天气数据省份分布", data_pair=zip_data, maptype="china", zoom=1, center=[105, 38])
                 .set_global_opts(
                 title_opts=opts.TitleOpts(title="天气数据省份分布"),
-                visualmap_opts=opts.VisualMapOpts(max_=13000, is_piecewise=False,
+                visualmap_opts=opts.VisualMapOpts(max_=max_total_size, is_piecewise=False,
                                                   # pieces=[{"max": 999, "  min": 0, "label": "0-999", "color": "#FFE4E1"},
                                                   #         {"max": 1999, "min": 1000, "label": "1000-1999",
                                                   #          "color": "#FF7F50"},
