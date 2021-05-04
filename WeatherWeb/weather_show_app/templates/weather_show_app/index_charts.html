@@ -118,7 +118,7 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
 
 
                     </td>
-                      <td><a target="_blank" href="{% url 'weather_show_app:host' %}?city_id={{city.id}}">{{city.name}}</a></td>
+                      <td><a target="_blank" href="{% url 'weather_show_app:today_weather' %}?city_id={{city.id}}">{{city.name}}</a></td>
                       <td>
                           <button id="{{city.id}}"    name="del_button"
                                   class="mdui-btn mdui-btn-icon mdui-color-theme-accent mdui-ripple mdui-ripple-white">

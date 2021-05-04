@@ -203,17 +203,21 @@ JsonError = json_error
 
 
 def today_weather_page(request):
-    # all_citys = City.objects.all()
-    # city_tablse = pd.DataFrame.from_records(all_citys.values())
 
-    city_id = request.GET.get("city_id", 174)
+    city_id = request.GET.get("city_id", 174)  # 174 是茂名
+    city_name = request.GET.get("city_name", None)  # 174 是茂名
+    city = City.objects.filter(name=city_name)
+    if not city:
+        now_city = City.objects.get(id=city_id)
+    else:
+        now_city = city[0]
+
     now_date = datetime.datetime.now().strftime('%Y-%m-%d')
     yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
 
     select_date = request.GET.get("select_date", now_date)
 
     all_citys = City.objects.filter(is_city=True)
-    now_city = City.objects.get(id=city_id)
     today_weather = DateWeather.objects.get(city_id=now_city.id, date=select_date)
     future_date = (datetime.date.today() + datetime.timedelta(days=7)).strftime('%Y-%m-%d')
     past_dates = (datetime.date.today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d')
