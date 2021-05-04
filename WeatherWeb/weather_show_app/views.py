@@ -1,9 +1,6 @@
 import datetime
 import json
-import random
-import time
 
-import pandas as pd
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -16,6 +13,7 @@ from django.shortcuts import render, redirect
 from rest_framework.views import APIView
 
 from .forms import LoginForm, RegistrationForm
+from .kmeans_process import get_similarity_city_controller
 from .models import City, DateWeather, Favourite
 
 
@@ -54,6 +52,7 @@ def testindex(request):  # 测试页
     # 按月份
     df.index = pd.to_datetime(df.house_firstOnSale)
     return render(request, 'weather_show_app/test.html', context={"article": result})
+
 
 # @login_required(login_url='/loginpage/')  # 详情页
 def detaillist(request):  # 数据列表页分页
@@ -109,6 +108,7 @@ def index(request):  # 这儿唯一有一个就是显示页面的
         'count_today_city': count_city,  # None,  # count_today_city,  # 今天总共爬了多少个城市
         'count_total_city': None,  # count_total_city,
         'success_info': None  # success_info
+
     }
     return render(request, 'weather_show_app/index_chartspage.html', context)
 
@@ -169,15 +169,6 @@ def userLogout(request):  # 登出
     return redirect("/loginpage/")
 
 
-@login_required(login_url='/loginpage/')  # 爬虫数据页
-def facilityPage(request):
-    context = {
-        'app_name': "房源设施分析"
-        # result
-    }
-    return render(request, 'weather_show_app/index_chartspage_facility.html', context)
-
-
 def response_as_json(data):
     json_str = json.dumps(data)
     response = HttpResponse(
@@ -211,8 +202,10 @@ JsonResponse = json_response
 JsonError = json_error
 
 
-# @login_required(login_url='/loginpage/')  # 默认主页
 def today_weather_page(request):
+    # all_citys = City.objects.all()
+    # city_tablse = pd.DataFrame.from_records(all_citys.values())
+
     city_id = request.GET.get("city_id", 174)
     now_date = datetime.datetime.now().strftime('%Y-%m-%d')
     yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
@@ -229,8 +222,13 @@ def today_weather_page(request):
     past_weathers = DateWeather.objects.filter(date__range=(past_dates, yesterday), city_id=city_id).order_by("-date")
     past_weather_dates = [weather.date for weather in past_weathers]
 
+    result = get_similarity_city_controller(city_id)
+
     return render(request, 'weather_show_app/index_chartspage_today_detail.html',
-                  context={"app_name": "指定城市当天天气情况", 'all_citys': all_citys, "select_date": select_date,
+                  context={"app_name": "指定城市当天天气情况",
+                           'all_citys': all_citys,
+                           'test_vars': result,
+                           "select_date": select_date,
                            "city_id": city_id, "now_city": now_city, "today_weather": today_weather,
                            "future_weathers": future_weathers, "past_dates": past_weather_dates})
 
@@ -365,6 +363,7 @@ class favouriteHandler(APIView):  # 使用不同的试图来进行封装
 
     def post(self, request, *args, **kwargs):
         return json_response({"result": "请通过get"})
+
 
 # 这个组件是组装搜索结果的
 def maketable(result):

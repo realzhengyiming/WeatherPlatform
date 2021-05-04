@@ -37,19 +37,7 @@
       </div>
       <div class="mdui-collapse-item-body mdui-list  mdui-collapse-item-open  ">
            <a href="{% url 'weather_show_app:host' %}" class="mdui-list-item mdui-ripple mdui-list-item-active">城市天气分析</a>
-<!--          &lt;!&ndash;<a href="{% url 'weather_show_app:consumer' %}" class="mdui-list-item mdui-ripple ">房客专区</a>&ndash;&gt;-->
-<!--    <a href="{% url 'weather_show_app:price' %}" class="mdui-list-item mdui-ripple ">房源价格分析</a>-->
-<!--       &lt;!&ndash;<a href="{% url 'weather_show_app:detaillist' %}" class="mdui-list-item mdui-ripple ">地理位置分析</a>&ndash;&gt;-->
-<!--        <a href="{% url 'weather_show_app:time' %}" class="mdui-list-item mdui-ripple ">发布时间分析</a>-->
-<!--      &lt;!&ndash;<a href="{% url 'weather_show_app:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>&ndash;&gt;-->
-<!--        <a href="{% url 'weather_show_app:area' %}" class="mdui-list-item mdui-ripple ">房源面积分析</a>-->
-<!--      &lt;!&ndash;<a href="{% url 'weather_show_app:favcount' %}" class="mdui-list-item mdui-ripple ">喜欢数分析</a>&ndash;&gt;-->
-<!--        &lt;!&ndash;<a href="{% url 'weather_show_app:facilityPage' %}" class="mdui-list-item mdui-ripple ">房源</a>&ndash;&gt;-->
-<!--        <a href="{% url 'weather_show_app:facilityPage' %}" class="mdui-list-item mdui-ripple ">房源设施分析</a>-->
-<!--             <a ><div class="mdui-divider"></div></a>-->
-<!--        <a href="{% url 'weather_show_app:assess' %}" class="mdui-list-item mdui-ripple ">房源价格评估</a>-->
-
-    </div>
+      </div>
   </div>
 
   </div>
@@ -103,10 +91,24 @@
     <input type="submit">
     <br>
 
+    <br>
+    <div class="mdui-panel" mdui-panel>
 
-    <h2>
-    当天天气情况
-</h2>
+  <div class="mdui-panel-item">
+    <div class="mdui-panel-item-header">相似天气城市</div>
+    <div class="mdui-panel-item-body">
+      {% for city in test_vars %}
+         <div class="mdui-chip">
+          <span class="mdui-chip-title">{{city}}</span>
+        </div>
+        {% endfor %}
+    </div>
+  </div>
+    </div>
+
+
+
+
 </form>
 <br><div class="mdui-chip">
   <span class="mdui-chip-title">天气情况：{{today_weather.state}}</span>
@@ -120,161 +122,9 @@
       <div class="mdui-chip">
   <span class="mdui-chip-title">穿衣指数：{{ today_weather | wear_clothing_guide }}</span>
 </div><br>
+<br><br>
 
 
-      <h2>24小时AQI图</h2>
-
-   <div id="get_hostDraw_chart-hide">
-    <div class="mdui-center mdui-spinner mdui-spinner-colorful" style="margin-top: 200px;"></div>
-    </div>
-<div class="mdui-center" id="get_hostDraw" style="width:800px; height:400px;margin-top: 50px;"></div>
-    <script>
-
-
-
-        //        $('#select_city').change(function(){
-//            var city_id = $('#select_city option:selected').val();
-//            now_city_id = city_id;
-//            //依次启动这几个图表
-//         });
-
-
-        var get_hostDraw_chart = echarts.init(document.getElementById('get_hostDraw'), 'black', {renderer: 'canvas'});
-        $(
-            function (){
-                fetchget_hostDrawData(get_hostDraw_chart);
-                //{#setInterval(fetchData, 100000);#}
-            }
-        );
-
-        function fetchget_hostDrawData() {
-            retry_counter = 0
-            $.ajax({
-                type: "GET",
-                url: "{% url 'weather_show_app:get_today_aqi_line' %}?city_id={{city_id}}&select_date={{select_date}}",
-                dataType: 'json',
-                async: true,
-                timeout:5000,
-
-
-                success: function (result) {
-                    get_hostDraw_chart.setOption(result.data);
-                    $('#get_hostDraw_chart-hide').css('display','none');  // 组件完全隐藏，不占用显示时占用的位置
-                    $('#get_hostDraw_chart').css('display','block');   //在设置组件可以看
-                },
-                error : function(XMLHttpRequest,status) { //请求完成后最终执行参数
-                    if (status === 'timeout') {
-                        //超时,status还有success,error等值的情况
-                        if (retry_counter > 3){
-                            return
-                        }else{
-                            $.ajax(this).abort();
-                        console.log("超时,已重试");
-                        $.ajax(this);
-                        return
-                        }
-
-
-                    }
-                }
-
-
-            });
-        }
-    </script>
-
-
-
-
-<h2>24小时风力雷达图</h2>
-
-    <div class="mdui-center" id="timeline" style="width:800px; height:400px;margin-top:50px;"></div>
-    <script>
-        var timeline_chart = echarts.init(document.getElementById('timeline'), 'white', {renderer: 'canvas'});
-        $(
-            function () {
-                fetchData_timeline(timeline_chart);
-                //{#setInterval(fetchData_timeline, 10000);#}
-            }
-        );
-
-        function fetchData_timeline() {
-            $.ajax({
-                type: "GET",
-                url: "{% url 'weather_show_app:get_hostReplay' %}?city_id={{city_id}}&select_date={{select_date}}",
-                dataType: 'json',
-                async: true,
-                timeout:5000,
-
-                success: function (result) {
-                    timeline_chart.setOption(result.data);
-                },
-                error : function(XMLHttpRequest,status) { //请求完成后最终执行参数
-                    if (status === 'timeout') {
-                        //超时,status还有success,error等值的情况
-                        if (retry_counter > 3){
-                            return
-                        }else{
-                            $.ajax(this).abort();
-                        console.log("超时,已重试");
-                        $.ajax(this);
-                        return
-                        }
-
-
-                    }
-                }
-
-            });
-        }
-    </script>
-
-          <div class="mdui-center" id="draw_relative_humidity" style="width:800px; height:400px;"></div>
-    <script>
-        var drawmap_humidity_chart = echarts.init(document.getElementById('draw_relative_humidity'), 'white', {renderer: 'canvas'});
-        $(
-            function () {
-                fetchData_humidity_drawmap(drawmap_humidity_chart);
-                //{#setInterval(fetchData_drawmap, 10000);#}
-            }
-        );
-        //
-        function fetchData_humidity_drawmap() {
-            $.ajax({
-                type: "GET",
-                url: "{% url 'weather_show_app:draw_relative_humidity' %}?city_id={{city_id}}&select_date={{select_date}}",
-                dataType: 'json',
-                async: true,
-                timeout:5000,   //15秒
-
-                success: function (result) {
-                    drawmap_humidity_chart.setOption(result.data);
-                },
-                error : function(XMLHttpRequest,status) { //请求完成后最终执行参数
-                    if (status === 'timeout') {
-                        if (retry_counter > 3){
-                            mdui.alert('已超时...');
-                            return
-                        }else{
-                            $.ajax(this).abort();
-                        console.log("超时,已重试");
-                        $.ajax(this);
-                        return
-                        }
-
-
-                    }
-                }
-
-            });
-        }
-
-
-    </script>
-
-{#这个是地图#}
-        <br>
-    <br>
     <div class="mdui-center" id="drawmap" style="width:800px; height:400px;"></div>
     <script>
         var drawmap_chart = echarts.init(document.getElementById('drawmap'), 'white', {renderer: 'canvas'});
@@ -319,6 +169,150 @@
 
 
     </script>
+
+    <div class="mdui-center" id="draw_relative_humidity" style="width:800px; height:400px;"></div>
+    <script>
+        var drawmap_humidity_chart = echarts.init(document.getElementById('draw_relative_humidity'), 'white', {renderer: 'canvas'});
+        $(
+            function () {
+                fetchData_humidity_drawmap(drawmap_humidity_chart);
+                //{#setInterval(fetchData_drawmap, 10000);#}
+            }
+        );
+        //
+        function fetchData_humidity_drawmap() {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'weather_show_app:draw_relative_humidity' %}?city_id={{city_id}}&select_date={{select_date}}",
+                dataType: 'json',
+                async: true,
+                timeout:5000,   //15秒
+
+                success: function (result) {
+                    drawmap_humidity_chart.setOption(result.data);
+                },
+                error : function(XMLHttpRequest,status) { //请求完成后最终执行参数
+                    if (status === 'timeout') {
+                        if (retry_counter > 3){
+                            mdui.alert('已超时...');
+                            return
+                        }else{
+                            $.ajax(this).abort();
+                        console.log("超时,已重试");
+                        $.ajax(this);
+                        return
+                        }
+
+
+                    }
+                }
+
+            });
+        }
+
+
+    </script>
+
+
+
+
+
+<h3>24小时风力雷达图</h3>
+    <div class="mdui-center" id="timeline" style="width:800px; height:400px;margin-top:50px;"></div>
+    <script>
+        var timeline_chart = echarts.init(document.getElementById('timeline'), 'white', {renderer: 'canvas'});
+        $(
+            function () {
+                fetchData_timeline(timeline_chart);
+                //{#setInterval(fetchData_timeline, 10000);#}
+            }
+        );
+
+        function fetchData_timeline() {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'weather_show_app:get_hostReplay' %}?city_id={{city_id}}&select_date={{select_date}}",
+                dataType: 'json',
+                async: true,
+                timeout:5000,
+
+                success: function (result) {
+                    timeline_chart.setOption(result.data);
+                },
+                error : function(XMLHttpRequest,status) { //请求完成后最终执行参数
+                    if (status === 'timeout') {
+                        //超时,status还有success,error等值的情况
+                        if (retry_counter > 3){
+                            return
+                        }else{
+                            $.ajax(this).abort();
+                        console.log("超时,已重试");
+                        $.ajax(this);
+                        return
+                        }
+
+
+                    }
+                }
+
+            });
+        }
+    </script>
+
+        <div id="get_hostDraw_chart-hide">
+    <div class="mdui-center mdui-spinner mdui-spinner-colorful" style="margin-top: 200px;"></div>
+    </div>
+
+<div class="mdui-center" id="get_hostDraw" style="width:800px; height:400px;margin-top: 50px;"></div>
+    <script>
+        var get_hostDraw_chart = echarts.init(document.getElementById('get_hostDraw'), 'black', {renderer: 'canvas'});
+        $(
+            function (){
+                fetchget_hostDrawData(get_hostDraw_chart);
+            }
+        );
+
+        function fetchget_hostDrawData() {
+            retry_counter = 0
+            $.ajax({
+                type: "GET",
+                url: "{% url 'weather_show_app:get_today_aqi_line' %}?city_id={{city_id}}&select_date={{select_date}}",
+                dataType: 'json',
+                async: true,
+                timeout:5000,
+
+
+                success: function (result) {
+                    get_hostDraw_chart.setOption(result.data);
+                    $('#get_hostDraw_chart-hide').css('display','none');  // 组件完全隐藏，不占用显示时占用的位置
+                    $('#get_hostDraw_chart').css('display','block');   //在设置组件可以看
+                },
+                error : function(XMLHttpRequest,status) { //请求完成后最终执行参数
+                    if (status === 'timeout') {
+                        //超时,status还有success,error等值的情况
+                        if (retry_counter > 3){
+                            return
+                        }else{
+                            $.ajax(this).abort();
+                        console.log("超时,已重试");
+                        $.ajax(this);
+                        return
+                        }
+
+
+                    }
+                }
+
+
+            });
+        }
+    </script>
+
+
+
+
+        <br>
+    <br>
 
 
 

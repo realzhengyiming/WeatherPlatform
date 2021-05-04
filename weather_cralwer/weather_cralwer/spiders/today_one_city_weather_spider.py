@@ -6,7 +6,6 @@ from typing import List
 import scrapy
 
 from weather_cralwer.weather_cralwer.clean_util import temperature_process, aqi_process
-from weather_cralwer.weather_cralwer.db_util import mysql_conn_instance  # todo 修好这个东西 找不到爬虫的问题
 from weather_cralwer.weather_cralwer.items import DateWeatherItem, HourWeatherItem
 
 
