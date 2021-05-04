@@ -64,10 +64,8 @@ class City(models.Model):
     location = models.CharField(max_length=150, default="")  # 经纬度
 
     belong_province = models.CharField(max_length=100, default="")  # 属于的省份
-
-
     # 对应中国天气网的url code http://www.weather.com.cn/weather/101080101.shtml
-
+    '''alter table City add COLUMN location varchar(150) default '' ;'''
     def __str__(self):
         return f"{self.name};"
 

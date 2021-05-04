@@ -87,7 +87,6 @@ def get_similarity_city_controller(city_id):
     full_columns = list(df.columns)
     empty_df = pd.DataFrame(columns=full_columns)
     need_predict_df = pd.concat([empty_df, today_city_weather_cleaned], axis=0).fillna(0)
-
     # 也要经过相同的处理
     result = fit_clf.predict(need_predict_df)
     # 获得每一类的相似的城市
