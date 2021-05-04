@@ -13,7 +13,6 @@ from django.db.models import Count  # 直接使用models中的统计类来进行
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.views.decorators.http import require_http_methods
 from rest_framework.views import APIView
 
 from .forms import LoginForm, RegistrationForm
@@ -54,9 +53,6 @@ def testindex(request):  # 测试页
     # print(df)
     # 按月份
     df.index = pd.to_datetime(df.house_firstOnSale)
-    # type(df.id.resample("1M").count())  # huode 按月份来
-    # print(df.id.resample("M").count().to_period("M"))
-
     return render(request, 'weather_show_app/test.html', context={"article": result})
 
 # @login_required(login_url='/loginpage/')  # 详情页
@@ -102,20 +98,11 @@ def fetchall_sql_dict(sql) -> [dict]:  # 这儿唯一有一个就是显示页面
 
 # @login_required(login_url='/loginpage/')  # 默认主页，主页不用登录，但是收藏夹需要登录
 def index(request):  # 这儿唯一有一个就是显示页面的
-    success_info = None
     if request.GET.get("success_info"):
         success_info = request.GET.get("success_info")
-        print(success_info)
-
-    nowdate = time.strftime('%Y-%m-%d', time.localtime(time.time()))
-
     # 总共的城市的数量
     count_city = City.objects.all().aggregate(count=Count("name", distinct=True))  # todo 花里胡哨的样式晚点再慢慢调整
-    # count_weather = DateWeather
-    # count_today = DateWeather.objects.filter(date=nowdate).aggregate(count=Count("id"))
     count_today = DateWeather.objects.all().aggregate(count=Count("id"))
-    # count_today_city = Weather.objects.filter(date=nowdate).aggregate(count=Count("id", distinct=True))
-    # count_total_city = Weather.objects.aggregate(count=Count("house_cityName", distinct=True))
     context = {
         'app_name': "天气分析",
         'count_today': count_today,  # None,  # count_today,
@@ -228,6 +215,8 @@ JsonError = json_error
 def today_weather_page(request):
     city_id = request.GET.get("city_id", 174)
     now_date = datetime.datetime.now().strftime('%Y-%m-%d')
+    yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+
     select_date = request.GET.get("select_date", now_date)
 
     all_citys = City.objects.filter(is_city=True)
@@ -237,7 +226,7 @@ def today_weather_page(request):
     past_dates = (datetime.date.today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d')
 
     future_weathers = DateWeather.objects.filter(date__range=(now_date, future_date), city_id=city_id)
-    past_weathers = DateWeather.objects.filter(date__range=(past_dates, now_date), city_id=city_id).order_by("-date")
+    past_weathers = DateWeather.objects.filter(date__range=(past_dates, yesterday), city_id=city_id).order_by("-date")
     past_weather_dates = [weather.date for weather in past_weathers]
 
     return render(request, 'weather_show_app/index_chartspage_today_detail.html',
@@ -377,64 +366,6 @@ class favouriteHandler(APIView):  # 使用不同的试图来进行封装
     def post(self, request, *args, **kwargs):
         return json_response({"result": "请通过get"})
 
-
-# 写个接口，返回监控的房子id,理论上是所有id与单个用户无关
-class get_fav_house_by_id(APIView):  # 这儿是给爬虫用的。爬虫调用这边，使用这种通讯
-    def get(self, request, *args, **kwargs):
-        # print("get 进来了")
-        userid = self.request.query_params.get('api', None)
-        if userid is not None and userid == "asdsewrzt!dfe":
-            result = fetchall_sql(f'''SELECT b.house_id FROM `hotelapp_favourite_fav_houses` a left join 
-												hotelapp_house b on a.house_id= b.id''')  # 这个时候传进来
-            return json_response({"result": result})
-        else:
-            return json_response({"result": ""})  # 失败的话
-            # return "None"
-    # def post(self, request, *args, **kwargs):
-    #     return json_response({"result": "请通过get"})
-
-
-# 如何取号标题
-class getHotTitle(APIView):  # 突然觉得这个功能没有必要
-    def get(self, request, *args, **kwargs):
-        result = ""  # 前1000个最受欢迎的放原标题的分析，更好的设计自己的标题
-        result = fetchall_sql_dict("select DISTINCT house_id,house_title,house_favcount from hotelapp_house ORDER BY " +
-                                   "house_favcount desc limit 1000")
-        alltitle = ""  # 如何取好标题
-        for i in result:
-            # for title in i['house_title']:
-            print(i['house_title'])
-            alltitle += i['house_title']
-        import jieba.analyse
-        jieba.analyse.set_stop_words('weather_show_app/stopword1.txt')
-        # 词语数组
-        wordList = []
-        # 用于统计词频
-        wordCount = {}
-
-        # 从分词后的源文件中读取数据
-        # sourceData = readFile(sourceFile)
-        # 利用空格分割成数组
-        # wordList = sourceData.split(' ')
-        wordList = jieba.lcut(alltitle)
-
-        # 遍历数组进行词频统计，这里使用wordCount 对象，出发点是对象下标方便查询
-        for item in wordList:
-            if item not in wordCount:
-                wordCount[item] = 1
-            else:
-                wordCount[item] += 1
-        # 循环结束，wordCount 对象将保存所有的词语和词频
-        # method = self.request.query_params.get('method', None)
-        dic1SortList = sorted(wordCount.items(), key=lambda x: x[1], reverse=True)
-
-        return JsonResponse({"data": dic1SortList})
-
-
-# 如何取号标题
-from django.views.decorators.csrf import csrf_exempt
-
-
 # 这个组件是组装搜索结果的
 def maketable(result):
     head = '''
@@ -465,37 +396,3 @@ def maketable(result):
     '''
     tail = '''</tbody></table>'''
     return head + temp + tail
-
-
-@csrf_exempt  # 这个跳过csrf验证
-@require_http_methods(["POST"])
-def getSearch(request):  # 突然觉得这个功能没有必要
-    if request.method == "POST":
-        # keyword =  request.GET.get('keyword')  # 前端判断呗
-        keyword = request.POST.get('keyword')
-        money_range = request.POST.get('money_range')
-
-        print("提取到keyword")
-        print(keyword)
-        print(money_range)
-
-        # 找找有没有地理位置，有就抠出来
-
-        if keyword == None:
-            return JsonResponse({"data": "请输出关键词"})
-        result = ""  # 前1000个最受欢迎的放原标题的分析，更好的设计自己的标题
-        result = fetchall_sql_dict(f'''
-                    select house_url,house_title,house_favcount,house_discountprice,house_img,house_cityName,
-                    house_location_text,house_id FROM
-										( SELECT house_url,house_title,house_favcount,house_discountprice,house_img,
-                    house_location_text,house_id,house_cityName FROM `hotelapp_house` 
-                    where house_discountprice<={float(money_range)} ) result 
-										where house_title like "%{keyword}%" or  house_cityName like "%{keyword}%"
-										or house_location_text like "%{keyword}%" ORDER BY house_discountprice desc,house_favcount desc''')
-        # print(result)
-        # 后端组装好table后再传给前端，直接添加就可以
-        # print(maketable(result))
-        # print(result)
-        if len(result) == 0:
-            return JsonResponse({"table": "<h3 class='mdui-text-center'>未找到相关房源，请重新输入😂</h3>"})
-        return JsonResponse({'table': maketable(result)})

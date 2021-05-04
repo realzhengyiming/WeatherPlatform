@@ -101,24 +101,17 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
 <div class="mdui-dialog" id="example-4">
     <div class="mdui-dialog-content" >
       <div class="mdui-dialog-title mdui-center">已关注的天气</div>
-        <!-- 选择城市  -->
-        <!--偏好城市:<select class="mdui-select" mdui-select style="margin-left: 10px;">-->
-            <!--{% get_all_city  %}  这个好像没啥用-->
-          <!--&lt;!&ndash;<option value="2">State 2</option>&ndash;&gt;-->
-        <!--</select>-->
-      <!--<button id="check_position" class="mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white">-->
-        <!--<i class="mdui-icon material-icons">check</i></button>-->
             <div class="mdui-table-fluid">
               <table class="mdui-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>天气城市</th>
-                    <th>天气情况</th>
-                    <th>天气温度</th>
-                      <th>删除</th>
-                  </tr>
-                </thead>
+<!--                <thead>-->
+<!--                  <tr>-->
+<!--                    <th>#</th>-->
+<!--                    <th>天气城市</th>-->
+<!--                    <th>天气情况</th>-->
+<!--                    <th>天气温度</th>-->
+<!--                      <th>删除</th>-->
+<!--                  </tr>-->
+<!--                </thead>-->
                 <tbody id="add_apend">
                 {% if request.user.favourite.city.all %}
                  {% for city in request.user.favourite.city.all %}
