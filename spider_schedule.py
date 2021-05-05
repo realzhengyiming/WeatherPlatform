@@ -10,15 +10,13 @@ def spider_schedule_job():
     print(f"爬虫已启动，启动时间{datetime.datetime.now()}")
     # execute("scrapy crawl today_weather".split())  # 这样好像是不行的
     cmdline = '''
-    cd /root/new_tmp_job/WeatherPlatform &&
-    conda activate weather &&
-    scrapy crawl today_weather
+    cd /root/new_tmp_job/WeatherPlatform && conda activate weather && scrapy crawl today_weather
     '''
     system(cmdline)
 
 
 if __name__ == '__main__':
-    SCHEDULE_TIME = "00:10"
+    SCHEDULE_TIME = "10:14"
     schedule.every().day.at(SCHEDULE_TIME).do(spider_schedule_job)
     print(f"开始执行，现在时间是 {datetime.datetime.now()}")
     while True:
