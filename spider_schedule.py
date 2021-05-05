@@ -25,7 +25,7 @@ def execute_spider():  # shell执行的时候提前 使用指定路径下（虚�
 
 
 if __name__ == '__main__':
-    SCHEDULE_TIME = "10:14"
+    SCHEDULE_TIME = "01:00"  # 每天这个时候爬虫进行更新
     schedule.every().day.at(SCHEDULE_TIME).do(execute_spider)
     print(f"开始执行，现在时间是 {datetime.datetime.now()}")
     while True:
