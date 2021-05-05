@@ -1,10 +1,11 @@
 # 写一个简单的定时任务，让爬虫自动启动吧
-from os import system
-import schedule
-import time
 import datetime
 import subprocess
+import time
+
+import schedule
 from scrapy.cmdline import execute
+
 
 def spider_schedule_job():
     # 启动爬虫呢
@@ -18,14 +19,16 @@ def spider_schedule_job():
     # system(cmdline)
     print(result)
 
-def execute_spider():
+
+def execute_spider():  # shell执行的时候提前 使用指定路径下（虚拟环境下的python）
     execute('scrapy crawl today_weather'.split(" "))
 
+
 if __name__ == '__main__':
-    # SCHEDULE_TIME = "10:14"
-    # schedule.every().day.at(SCHEDULE_TIME).do(spider_schedule_job)
-    # print(f"开始执行，现在时间是 {datetime.datetime.now()}")
-    # while True:
-    #     schedule.run_pending()
-    #     time.sleep(1)
-    spider_schedule_job()
+    SCHEDULE_TIME = "10:14"
+    schedule.every().day.at(SCHEDULE_TIME).do(execute_spider)
+    print(f"开始执行，现在时间是 {datetime.datetime.now()}")
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+    # execute_spider()
