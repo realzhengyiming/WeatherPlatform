@@ -3,7 +3,8 @@ from os import system
 import schedule
 import time
 import datetime
-
+import subprocess
+from scrapy.cmdline import execute
 
 def spider_schedule_job():
     # 启动爬虫呢
@@ -12,13 +13,19 @@ def spider_schedule_job():
     cmdline = '''
     cd /root/new_tmp_job/WeatherPlatform && conda activate weather && scrapy crawl today_weather
     '''
-    system(cmdline)
+    cmdline = "date"
+    result = subprocess.Popen(cmdline)
+    # system(cmdline)
+    print(result)
 
+def execute_spider():
+    execute('scrapy crawl today_weather'.split(" "))
 
 if __name__ == '__main__':
-    SCHEDULE_TIME = "10:14"
-    schedule.every().day.at(SCHEDULE_TIME).do(spider_schedule_job)
-    print(f"开始执行，现在时间是 {datetime.datetime.now()}")
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    # SCHEDULE_TIME = "10:14"
+    # schedule.every().day.at(SCHEDULE_TIME).do(spider_schedule_job)
+    # print(f"开始执行，现在时间是 {datetime.datetime.now()}")
+    # while True:
+    #     schedule.run_pending()
+    #     time.sleep(1)
+    spider_schedule_job()

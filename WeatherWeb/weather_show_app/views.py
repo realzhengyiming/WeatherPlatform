@@ -237,51 +237,10 @@ def today_weather_page(request):
                            "future_weathers": future_weathers, "past_dates": past_weather_dates})
 
 
-@login_required(login_url='/loginpage/')  # 默认主页
-def consumerPage(request):
-    return render(request, 'weather_show_app/index_chartspage_consumer.html', context={"app_name": "房客专区"})
-
-
-# 详细的页面
-@login_required(login_url='/loginpage/')  # 默认主页
-def timePage(request):
-    return render(request, 'weather_show_app/index_chartspage_time.html', context={"app_name": "房源发布时间分析"})
-
-
-# 详细的页面
-@login_required(login_url='/loginpage/')  # 默认主页
-def pricePage(request):
-    return render(request, 'weather_show_app/index_chartspage_price.html', context={"app_name": "房源价格分析"})
-
-
-# 详细的页面
-@login_required(login_url='/loginpage/')  # 默认主页
-def favcountPage(request):
-    return render(request, 'weather_show_app/index_chartspage_price.html', context={"app_name": "热门房源分析"})
-
-
 # 搜索的页面
 @login_required(login_url='/loginpage/')  # 默认主页
 def searchPage(request):
     return render(request, 'weather_show_app/index_chartspage_search.html', context={"app_name": "查找房源"})
-
-
-# 房源面积的页面
-@login_required(login_url='/loginpage/')  # 默认主页
-def assessPage(request):
-    return render(request, 'weather_show_app/index_chartspage_assess.html', context={"app_name": "房源价格评估"})
-
-
-# 房源面积的页面
-@login_required(login_url='/loginpage/')  # 默认主页
-def area(request):
-    return render(request, 'weather_show_app/index_chartspage_area.html', context={"app_name": "房源面积分析"})
-
-
-# 房源面积的页面
-@login_required(login_url='/loginpage/')  # 默认主页
-def predictPage(request):
-    return render(request, 'weather_show_app/index_chartspage_predict.html', context={"app_name": "房源价格预估"})
 
 
 # 详细的页面
