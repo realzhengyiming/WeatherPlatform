@@ -13,7 +13,6 @@
     {#    加载静态#}
     <!--<link  rel="stylesheet" href="{% static 'css/mdui.min.css' %}">-->
     <!--<script  src="{% static 'js/mdui.js' %}"></script>-->
-
     <!--下面的是echarts的-->
 
     <link rel="stylesheet" href="//cdnjs.loli.net/ajax/libs/mdui/0.4.3/css/mdui.min.css">
@@ -22,9 +21,9 @@
   <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
     <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
     <script type="text/javascript" src="https://assets.pyecharts.org/assets/maps/guangdong.js"></script>
-   <script type="text/javascript" src="https://assets.pyecharts.org/assets/maps/china-cities.js"></script>
+    <script type="text/javascript" src="https://assets.pyecharts.org/assets/maps/china-cities.js"></script>
     <script type="text/javascript" src="https://assets.pyecharts.org/assets/maps/china.js"></script>
-<script type="text/javascript" src = "https://assets.pyecharts.org/assets/echarts-wordcloud.min.js"></script>
+    <script type="text/javascript" src = "https://assets.pyecharts.org/assets/echarts-wordcloud.min.js"></script>
 
     <!--水球-->
         <!--<script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>-->
@@ -53,9 +52,6 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
     <a  class="mdui-typo-title">{% block name %}{% endblock %}</a>
     <div class="mdui-toolbar-spacer"></div>
 
-
-
-
       {% if user.is_authenticated %}<a class="mdui-btn  mdui-ripple mdui-ripple-white"
                                        mdui-tooltip="{content: '关注的城市'}"
                                        mdui-dialog="{target: '#example-4'}">{{ request.user|lower }}</a>
@@ -68,12 +64,7 @@ mdui-theme-primary-blue-grey mdui-theme-accent-deep-orange">
      <i class="mdui-icon material-icons">&#xe879;</i>
       </a>{% else %}<a  mdui-tooltip="{content: '点击登陆<br>   😁'}"  href="{% url 'weather_show_app:user_login' %}">
       <front class="mdui-text-color-yellow">请先登陆</front></a>{% endif %}
-
-
-
-
   </div>
-
 
 </header>
 

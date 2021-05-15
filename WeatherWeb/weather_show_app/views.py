@@ -1,6 +1,7 @@
 import datetime
 import json
 
+import pandas as pd
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -43,13 +44,8 @@ def testindex(request):  # 测试页
     # print(result)
     # 然后转换成pandas进行一系列的筛选等
     # qs_dataframe = read_frame(qs=result)
-    # print(qs_dataframe)
 
-    import pandas as pd
-
-    df = pd.DataFrame(result)
-    # print(df)
-    # 按月份
+    df = pd.DataFrame(result)  # 按月份
     df.index = pd.to_datetime(df.house_firstOnSale)
     return render(request, 'weather_show_app/test.html', context={"article": result})
 
@@ -97,17 +93,20 @@ def fetchall_sql_dict(sql) -> [dict]:  # 这儿唯一有一个就是显示页面
 
 # @login_required(login_url='/loginpage/')  # 默认主页，主页不用登录，但是收藏夹需要登录
 def index(request):  # 这儿唯一有一个就是显示页面的
+    success_info = None
     if request.GET.get("success_info"):
         success_info = request.GET.get("success_info")
     # 总共的城市的数量
     count_city = City.objects.all().aggregate(count=Count("name", distinct=True))  # todo 花里胡哨的样式晚点再慢慢调整
     count_today = DateWeather.objects.all().aggregate(count=Count("id"))
+    print(count_today)
+    print(count_city)
     context = {
         'app_name': "天气分析",
-        'count_today': count_today,  # None,  # count_today,
+        'count_today': count_today,  # None,  # count_today
         'count_today_city': count_city,  # None,  # count_today_city,  # 今天总共爬了多少个城市
-        'count_total_city': None,  # count_total_city,
-        'success_info': None  # success_info
+        'count_total_city': None,  # count_total_city
+        'success_info': success_info
 
     }
     return render(request, 'weather_show_app/index_chartspage.html', context)
@@ -203,7 +202,6 @@ JsonError = json_error
 
 
 def today_weather_page(request):
-
     city_id = request.GET.get("city_id", 174)  # 174 是茂名
     city_name = request.GET.get("city_name", None)  # 174 是茂名
     city = City.objects.filter(name=city_name)

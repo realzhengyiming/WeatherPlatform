@@ -137,7 +137,7 @@
 {#        <td>{{ object.3 }}</td>#}
         <td>{{ object.max_temperature }}</td>
         <td>{{ object.min_temperature }}</td>
-                 <td ><a href="/today_weather/?city_id={{ object.city_id }}" target="_blank">详情</a></td>
+                 <td ><a href="/today_weather/?city_name={{ object.city_id | get_city_by_id }}" target="_blank">详情</a></td>
 
      </tr>
     {% endfor %}

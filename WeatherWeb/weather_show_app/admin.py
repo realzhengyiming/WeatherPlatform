@@ -11,7 +11,7 @@ class ExtendCity(admin.ModelAdmin):
 
 
 class ExtendDateWeather(admin.ModelAdmin):
-    search_fields = ("city", "state", "date")  # 搜索字段
+    search_fields = ("date",)  # 搜索字段
     list_display = (
         "id", 'city', "state", "date",
         "max_temperature", "min_temperature",
@@ -20,6 +20,7 @@ class ExtendDateWeather(admin.ModelAdmin):
     def detail_weather(self, obj):  # 好方便啊
         num = len(obj.city.all())
         return str(num)
+
 
 class ExtendFav(admin.ModelAdmin):
     list_display = (
